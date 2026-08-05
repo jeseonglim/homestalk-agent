@@ -785,13 +785,19 @@ async function doAgentLogout() {
   go('s-login');
 }
 
-// 로그인 상태 확인 (페이지 로드 시)
-supabase.auth.getSession().then(function(r) {
-  if (r.data.session) {
-    var hash = location.hash.replace('#','');
-    go(hash && document.getElementById(hash) ? hash : 's-home');
-  }
-});
+// 로그인 상태 확인 (카카오 로그인 콜백 포함)
+setTimeout(function() {
+  supabase.auth.getSession().then(function(r) {
+    if (r.data.session) {
+      var hash = location.hash.replace('#','');
+      if (hash && document.getElementById(hash)) {
+        go(hash);
+      } else {
+        go('s-home');
+      }
+    }
+  });
+}, 500);
 
 // 로그인 상태 변화 감지
 supabase.auth.onAuthStateChange(function(ev, session) {
