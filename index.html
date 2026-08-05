@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -242,7 +244,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
 
   <div style="height:80px;"></div>
   <div class="nav">
-    <div class="ni on"><i class="ti ti-bell"></i><span>의뢰함</span></div>
+    <div class="ni on" onclick="go('s-home')"><i class="ti ti-bell"></i><span>의뢰함</span></div>
     <div class="ni" onclick="go('s-qr')"><i class="ti ti-qrcode"></i><span>내 QR</span></div>
     <div class="ni" onclick="go('s-adup')"><i class="ti ti-speakerphone"></i><span>광고등록</span></div>
     <div class="ni" onclick="go('s-profile')"><i class="ti ti-user"></i><span>프로필</span></div>
@@ -337,7 +339,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
 
   <div class="nav">
     <div class="ni" onclick="go('s-home')"><i class="ti ti-bell"></i><span>의뢰함</span></div>
-    <div class="ni on"><i class="ti ti-qrcode"></i><span>내 QR</span></div>
+    <div class="ni on" onclick="go('s-qr')"><i class="ti ti-qrcode"></i><span>내 QR</span></div>
     <div class="ni" onclick="go('s-adup')"><i class="ti ti-speakerphone"></i><span>광고등록</span></div>
     <div class="ni" onclick="go('s-profile')"><i class="ti ti-user"></i><span>프로필</span></div>
   </div>
@@ -399,7 +401,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
   <div class="nav">
     <div class="ni" onclick="go('s-home')"><i class="ti ti-bell"></i><span>의뢰함</span></div>
     <div class="ni" onclick="go('s-qr')"><i class="ti ti-qrcode"></i><span>내 QR</span></div>
-    <div class="ni on"><i class="ti ti-speakerphone"></i><span>광고등록</span></div>
+    <div class="ni on" onclick="go('s-adup')"><i class="ti ti-speakerphone"></i><span>광고등록</span></div>
     <div class="ni" onclick="go('s-profile')"><i class="ti ti-user"></i><span>프로필</span></div>
   </div>
 </div>
@@ -636,7 +638,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
     <div class="ni" onclick="go('s-home')"><i class="ti ti-bell"></i><span>의뢰함</span></div>
     <div class="ni" onclick="go('s-qr')"><i class="ti ti-qrcode"></i><span>내 QR</span></div>
     <div class="ni" onclick="go('s-adup')"><i class="ti ti-speakerphone"></i><span>광고등록</span></div>
-    <div class="ni on"><i class="ti ti-user"></i><span>프로필</span></div>
+    <div class="ni on" onclick="go('s-profile')"><i class="ti ti-user"></i><span>프로필</span></div>
   </div>
 </div>
 
@@ -649,11 +651,32 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
 </div>
 
 <script>
+// 화면 전환 + 네비게이션 활성화 + URL 해시 저장
 function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   const el=document.getElementById(id);
   if(el){el.classList.add('on');window.scrollTo(0,0);}
+
+  // URL 해시 저장 (새로고침해도 현재 페이지 유지)
+  if(id !== 's-login') location.hash = id;
+
+  // 모든 화면의 네비게이션 활성화 표시 업데이트
+  document.querySelectorAll('.nav').forEach(function(nav){
+    nav.querySelectorAll('.ni').forEach(function(ni){
+      ni.classList.remove('on');
+      var onclick = ni.getAttribute('onclick') || '';
+      if(onclick.indexOf(id) > -1) ni.classList.add('on');
+    });
+  });
 }
+
+// 페이지 로드 시 해시가 있으면 해당 화면으로 이동
+window.addEventListener('DOMContentLoaded', function(){
+  var hash = location.hash.replace('#','');
+  if(hash && document.getElementById(hash)){
+    go(hash);
+  }
+});
 
 function showProfTab(tab){
   document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('on'));
