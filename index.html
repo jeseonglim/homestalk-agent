@@ -132,9 +132,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
     <div class="login-icon">🏠</div>
     <div style="font-size:24px;font-weight:700;color:var(--tx);margin-bottom:8px;">홈<span style="color:var(--gold);">즈</span>톡 파트너</div>
     <div style="font-size:14px;color:var(--t2);line-height:1.7;margin-bottom:28px;">공인중개사 전용 앱이에요.<br>의뢰 관리부터 광고 등록까지 한 번에!</div>
-    <button style="width:100%;padding:14px;background:#FEE500;border:none;border-radius:12px;font-size:16px;font-weight:700;color:#3A1D1D;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;" onclick="doKakaoLogin()"><span style="font-size:20px;">💬</span>카카오로 시작하기</button>
+    <button style="width:100%;padding:14px;background:#FEE500;border:none;border-radius:12px;font-size:16px;font-weight:700;color:#3A1D1D;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;" onclick="doKakaoLogin()"><span style="font-size:20px;">💬</span>카카오로 시작하기</button>
 
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+    <div style="display:flex;align-items:center;gap:12px;margin:14px 0;">
       <div style="flex:1;height:1px;background:var(--br);"></div>
       <span style="font-size:12px;color:var(--t3);">또는 이메일로</span>
       <div style="flex:1;height:1px;background:var(--br);"></div>
@@ -668,7 +668,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
     <div class="ni on" onclick="go('s-profile')"><i class="ti ti-user"></i><span>프로필</span></div>
   </div>
   <div style="padding:16px 16px 100px;">
-    <button onclick="doAgentLogout()" style="width:100%;padding:13px;background:none;border:1.5px solid var(--br);border-radius:12px;font-size:14px;font-weight:500;color:var(--t2);cursor:pointer;font-family:inherit;">로그아웃</button>
+    <button onclick="doAgentLogout()" style="width:100%;padding:13px;background:none;border:1.5px solid rgba(0,0,0,0.08);border-radius:12px;font-size:14px;font-weight:500;color:#6B6B6B;cursor:pointer;font-family:inherit;">로그아웃</button>
   </div>
 </div>
 
@@ -681,107 +681,77 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
 </div>
 
 <script>
-// Supabase 연결
-var supabase = window.supabase.createClient(
+var sb = window.supabase.createClient(
   'https://owzbwgihypvzfogycskh.supabase.co',
   'sb_publishable_Azn9cbYHhUROjWoRU4mwZA_x7UhNnYN'
 );
 
-// 카카오 OAuth 콜백 감지
-var isOAuthCallback = window.location.hash && window.location.hash.includes('access_token');
-
-// OAuth 콜백이면 로딩 표시
-if (isOAuthCallback) {
-  window.addEventListener('DOMContentLoaded', function() {
-    var loginEl = document.getElementById('s-login');
-    if (loginEl) {
-      loginEl.innerHTML = '<div style="padding:120px 24px;text-align:center;"><div style="font-size:48px;margin-bottom:16px;">⏳</div><div style="font-size:16px;font-weight:600;color:#1A1A1A;">카카오 로그인 처리 중...</div><div style="font-size:13px;color:#9B9B9B;margin-top:8px;">잠시만 기다려주세요</div></div>';
-    }
-  });
-}
-
-// 화면 전환
 function go(id){
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});
-  var el = document.getElementById(id);
+  var el=document.getElementById(id);
   if(el){el.classList.add('on');window.scrollTo(0,0);}
-  if(id !== 's-login' && !isOAuthCallback) location.hash = id;
+  if(id!=='s-login') sessionStorage.setItem('hz_page',id);
   document.querySelectorAll('.nav').forEach(function(nav){
     nav.querySelectorAll('.ni').forEach(function(ni){
       ni.classList.remove('on');
-      var oc = ni.getAttribute('onclick') || '';
-      if(oc.indexOf(id) > -1) ni.classList.add('on');
+      var oc=ni.getAttribute('onclick')||'';
+      if(oc.indexOf(id)>-1) ni.classList.add('on');
     });
   });
 }
 
-// 로그인/회원가입 탭
-function switchAgentTab(tab) {
-  var lTab=document.getElementById('atab-login'), sTab=document.getElementById('atab-signup');
-  var lForm=document.getElementById('aform-login'), sForm=document.getElementById('aform-signup');
-  hideAuthMsg();
+function switchAgentTab(tab){
+  var l=document.getElementById('atab-login'),s=document.getElementById('atab-signup');
+  var lf=document.getElementById('aform-login'),sf=document.getElementById('aform-signup');
+  document.getElementById('auth-msg').style.display='none';
   if(tab==='login'){
-    lTab.style.cssText='flex:1;padding:10px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;background:var(--gl);border:1.5px solid var(--gold);color:var(--gd);text-align:center;';
-    sTab.style.cssText='flex:1;padding:10px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;background:var(--sf);border:1.5px solid var(--br);color:var(--t2);text-align:center;';
-    lForm.style.display='block';sForm.style.display='none';
+    l.style.cssText='flex:1;padding:10px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;background:#FFF3DC;border:1.5px solid #E8A020;color:#B87010;text-align:center;';
+    s.style.cssText='flex:1;padding:10px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;background:#fff;border:1.5px solid rgba(0,0,0,0.08);color:#6B6B6B;text-align:center;';
+    lf.style.display='block';sf.style.display='none';
   } else {
-    sTab.style.cssText='flex:1;padding:10px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;background:var(--gl);border:1.5px solid var(--gold);color:var(--gd);text-align:center;';
-    lTab.style.cssText='flex:1;padding:10px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;background:var(--sf);border:1.5px solid var(--br);color:var(--t2);text-align:center;';
-    lForm.style.display='none';sForm.style.display='block';
+    s.style.cssText='flex:1;padding:10px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;background:#FFF3DC;border:1.5px solid #E8A020;color:#B87010;text-align:center;';
+    l.style.cssText='flex:1;padding:10px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;background:#fff;border:1.5px solid rgba(0,0,0,0.08);color:#6B6B6B;text-align:center;';
+    lf.style.display='none';sf.style.display='block';
   }
 }
-function showAuthMsg(m,e){var el=document.getElementById('auth-msg');el.style.display='block';el.textContent=m;el.style.background=e?'#FEF2F2':'#F0FDF4';el.style.color=e?'#DC2626':'#16A34A';}
-function hideAuthMsg(){document.getElementById('auth-msg').style.display='none';}
+function showMsg(m,e){var el=document.getElementById('auth-msg');el.style.display='block';el.textContent=m;el.style.background=e?'#FEF2F2':'#F0FDF4';el.style.color=e?'#DC2626':'#16A34A';}
 
-// 카카오 로그인
-function doKakaoLogin(){
-  supabase.auth.signInWithOAuth({provider:'kakao',options:{redirectTo:'https://homestalk-agent.vercel.app'}});
-}
+function doKakaoLogin(){sb.auth.signInWithOAuth({provider:'kakao',options:{redirectTo:'https://homestalk-agent.vercel.app'}});}
 
-// 이메일 로그인
 async function doAgentLogin(){
-  var email=document.getElementById('a-login-email').value.trim();
-  var pw=document.getElementById('a-login-pw').value;
-  if(!email){showAuthMsg('이메일을 입력해주세요.',true);return;}
-  if(!pw){showAuthMsg('비밀번호를 입력해주세요.',true);return;}
-  var r=await supabase.auth.signInWithPassword({email:email,password:pw});
-  if(r.error){showAuthMsg(r.error.message.includes('Invalid')?'이메일 또는 비밀번호가 틀렸어요.':r.error.message,true);return;}
+  var e=document.getElementById('a-login-email').value.trim(),p=document.getElementById('a-login-pw').value;
+  if(!e){showMsg('이메일을 입력해주세요.',1);return;}
+  if(!p){showMsg('비밀번호를 입력해주세요.',1);return;}
+  var r=await sb.auth.signInWithPassword({email:e,password:p});
+  if(r.error){showMsg(r.error.message.includes('Invalid')?'이메일 또는 비밀번호가 틀렸어요.':r.error.message,1);return;}
   go('s-home');
 }
 
-// 회원가입
 async function doAgentSignup(){
-  var name=document.getElementById('a-signup-name').value.trim();
-  var email=document.getElementById('a-signup-email').value.trim();
-  var pw=document.getElementById('a-signup-pw').value;
+  var n=document.getElementById('a-signup-name').value.trim();
+  var e=document.getElementById('a-signup-email').value.trim();
+  var p=document.getElementById('a-signup-pw').value;
   var reg=document.getElementById('a-signup-reg').value.trim();
-  if(!name){showAuthMsg('이름을 입력해주세요.',true);return;}
-  if(!email){showAuthMsg('이메일을 입력해주세요.',true);return;}
-  if(pw.length<6){showAuthMsg('비밀번호는 6자 이상이어야 해요.',true);return;}
-  var r=await supabase.auth.signUp({email:email,password:pw,options:{data:{full_name:name,role:'agent',reg_number:reg}}});
-  if(r.error){showAuthMsg(r.error.message,true);return;}
-  if(r.data.user&&!r.data.session){showAuthMsg('인증 메일을 보냈어요! 이메일을 확인해주세요.',false);}
-  else if(r.data.session){go('s-home');}
+  if(!n){showMsg('이름을 입력해주세요.',1);return;}
+  if(!e){showMsg('이메일을 입력해주세요.',1);return;}
+  if(p.length<6){showMsg('비밀번호는 6자 이상이어야 해요.',1);return;}
+  var r=await sb.auth.signUp({email:e,password:p,options:{data:{full_name:n,role:'agent',reg_number:reg}}});
+  if(r.error){showMsg(r.error.message,1);return;}
+  if(r.data.user&&!r.data.session) showMsg('인증 메일을 보냈어요! 이메일을 확인해주세요.',0);
+  else if(r.data.session) go('s-home');
 }
 
-// 로그아웃
-async function doAgentLogout(){
-  await supabase.auth.signOut();
-  location.hash='';
-  location.reload();
-}
+async function doAgentLogout(){await sb.auth.signOut();sessionStorage.removeItem('hz_page');go('s-login');}
 
-// 로그인 상태 감지 (카카오 콜백 + 세션 유지 + 로그아웃 모두 처리)
-supabase.auth.onAuthStateChange(function(ev, session){
-  if(session && (ev==='SIGNED_IN' || ev==='TOKEN_REFRESHED' || ev==='INITIAL_SESSION')){
-    isOAuthCallback = false;
-    window.history.replaceState(null,'',window.location.pathname);
-    var h = location.hash.replace('#','');
-    if(h && document.getElementById(h) && h !== 's-login'){
-      go(h);
-    } else {
-      go('s-home');
+// 핵심: 로그인 상태 자동 감지
+sb.auth.onAuthStateChange(function(ev,session){
+  if(session){
+    // 로그인 성공 → URL 정리 후 홈으로
+    if(window.location.hash.includes('access_token')){
+      window.history.replaceState(null,'',window.location.pathname);
     }
+    var saved=sessionStorage.getItem('hz_page');
+    go(saved||'s-home');
   } else if(ev==='SIGNED_OUT'){
     go('s-login');
   }
@@ -789,28 +759,17 @@ supabase.auth.onAuthStateChange(function(ev, session){
 
 function showProfTab(tab){
   document.querySelectorAll('.ptab').forEach(function(t){t.classList.remove('on');});
-  if(event && event.currentTarget) event.currentTarget.classList.add('on');
+  if(event&&event.currentTarget) event.currentTarget.classList.add('on');
   ['기본','MBTI','사주','사진','SNS','미리보기'].forEach(function(t){
     var el=document.getElementById('prof-'+t);
-    if(el) el.style.display = t===tab ? 'block' : 'none';
+    if(el) el.style.display=t===tab?'block':'none';
   });
 }
 
 var deferredPrompt;
-window.addEventListener('beforeinstallprompt',function(e){
-  e.preventDefault();
-  deferredPrompt=e;
-  if(!window.matchMedia('(display-mode: standalone)').matches){
-    document.getElementById('install-banner').style.display='flex';
-  }
-});
-function installPWA(){
-  document.getElementById('install-banner').style.display='none';
-  if(deferredPrompt){deferredPrompt.prompt();deferredPrompt=null;}
-}
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/sw.js').catch(function(){});
-}
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferredPrompt=e;if(!window.matchMedia('(display-mode:standalone)').matches)document.getElementById('install-banner').style.display='flex';});
+function installPWA(){document.getElementById('install-banner').style.display='none';if(deferredPrompt){deferredPrompt.prompt();deferredPrompt=null;}}
+if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(function(){});
 </script>
 </body>
 </html>
