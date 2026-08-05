@@ -674,11 +674,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
 <script>
 var sb=window.supabase.createClient('https://owzbwgihypvzfogycskh.supabase.co','sb_publishable_Azn9cbYHhUROjWoRU4mwZA_x7UhNnYN');
 
-// 카카오 콜백 감지 (?code= 또는 #access_token=)
-var isCallback = (window.location.search && window.location.search.includes('code=')) || 
-                 (window.location.hash && window.location.hash.includes('access_token'));
-
-// 콜백이면 로딩 화면 표시
+// 카카오 콜백 감지
+var isCallback = window.location.search.includes('code=') || window.location.hash.includes('access_token');
 if(isCallback){
   document.addEventListener('DOMContentLoaded',function(){
     var el=document.getElementById('s-login');
@@ -742,34 +739,32 @@ async function doSignup(){
   else if(r.data.session) go('s-home');
 }
 
-async function doLogout(){await sb.auth.signOut();sessionStorage.removeItem('hz_page');window.location.href='https://homestalk-agent.vercel.app';}
+function doLogout(){sb.auth.signOut().then(function(){sessionStorage.clear();window.location.href='/';});}
 
-// ★ 핵심: 세션 확인 (카카오 콜백 + 일반 접속 + 새로고침 모두 처리) ★
-async function checkAuth(){
-  // 콜백이면 Supabase가 코드를 처리할 시간을 줌
-  if(isCallback){
-    for(var i=0;i<20;i++){
-      await new Promise(function(ok){setTimeout(ok,500);});
-      var r=await sb.auth.getSession();
-      if(r.data.session){
-        // 로그인 성공! URL 정리하고 홈으로
-        window.history.replaceState(null,'','/');
-        go('s-home');
-        return;
-      }
+// ★ 핵심: onAuthStateChange 하나로 모든 로그인 처리 ★
+var handled = false;
+sb.auth.onAuthStateChange(function(event, session){
+  if(handled && event==='INITIAL_SESSION') return;
+  
+  if(session){
+    handled = true;
+    // URL 정리
+    if(window.location.search || window.location.hash.includes('access_token')){
+      window.history.replaceState(null,'','/');
     }
-    // 10초 지나도 안되면 로그인 화면으로
-    window.location.href='https://homestalk-agent.vercel.app';
-  } else {
-    // 일반 접속: 세션 있으면 홈으로
-    var r=await sb.auth.getSession();
-    if(r.data.session){
-      var saved=sessionStorage.getItem('hz_page');
-      go(saved||'s-home');
-    }
+    go('s-home');
+  } else if(event==='INITIAL_SESSION' && !session && !isCallback){
+    // 콜백이 아닌데 세션 없음 = 로그인 안 된 상태
+    go('s-login');
   }
+});
+
+// 콜백인데 10초 안에 로그인 안되면 다시 로그인 화면
+if(isCallback){
+  setTimeout(function(){
+    if(!handled) window.location.href='/';
+  },10000);
 }
-checkAuth();
 
 function showProfTab(tab){
   document.querySelectorAll('.ptab').forEach(function(t){t.classList.remove('on');});
