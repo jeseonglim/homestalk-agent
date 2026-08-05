@@ -133,33 +133,24 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
     <div style="font-size:24px;font-weight:700;color:var(--tx);margin-bottom:8px;">홈<span style="color:var(--gold);">즈</span>톡 파트너</div>
     <div style="font-size:14px;color:var(--t2);line-height:1.7;margin-bottom:28px;">공인중개사 전용 앱이에요.<br>의뢰 관리부터 광고 등록까지 한 번에!</div>
     <button style="width:100%;padding:14px;background:#FEE500;border:none;border-radius:12px;font-size:16px;font-weight:700;color:#3A1D1D;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;" onclick="doKakaoLogin()"><span style="font-size:20px;">💬</span>카카오로 시작하기</button>
-
-    <div style="display:flex;align-items:center;gap:12px;margin:14px 0;">
-      <div style="flex:1;height:1px;background:var(--br);"></div>
-      <span style="font-size:12px;color:var(--t3);">또는 이메일로</span>
-      <div style="flex:1;height:1px;background:var(--br);"></div>
-    </div>
-
+    <div style="display:flex;align-items:center;gap:12px;margin:14px 0;"><div style="flex:1;height:1px;background:var(--br);"></div><span style="font-size:12px;color:var(--t3);">또는 이메일로</span><div style="flex:1;height:1px;background:var(--br);"></div></div>
     <div style="display:flex;gap:8px;margin-bottom:14px;">
-      <div id="atab-login" style="flex:1;padding:10px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;background:var(--gl);border:1.5px solid var(--gold);color:var(--gd);text-align:center;" onclick="switchAgentTab('login')">로그인</div>
-      <div id="atab-signup" style="flex:1;padding:10px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;background:var(--sf);border:1.5px solid var(--br);color:var(--t2);text-align:center;" onclick="switchAgentTab('signup')">회원가입</div>
+      <div id="atab-login" style="flex:1;padding:10px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;background:#FFF3DC;border:1.5px solid #E8A020;color:#B87010;text-align:center;" onclick="switchTab('login')">로그인</div>
+      <div id="atab-signup" style="flex:1;padding:10px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;background:#fff;border:1.5px solid rgba(0,0,0,0.08);color:#6B6B6B;text-align:center;" onclick="switchTab('signup')">회원가입</div>
     </div>
-
     <div id="aform-login">
       <input id="a-login-email" class="input" type="email" placeholder="이메일" style="margin-bottom:8px;">
       <input id="a-login-pw" class="input" type="password" placeholder="비밀번호" style="margin-bottom:12px;">
-      <button class="btn-gold" onclick="doAgentLogin()">로그인</button>
+      <button class="btn-gold" onclick="doLogin()">로그인</button>
     </div>
-
     <div id="aform-signup" style="display:none;">
       <input id="a-signup-name" class="input" type="text" placeholder="이름" style="margin-bottom:8px;">
       <input id="a-signup-email" class="input" type="email" placeholder="이메일" style="margin-bottom:8px;">
       <input id="a-signup-pw" class="input" type="password" placeholder="비밀번호 (6자 이상)" style="margin-bottom:8px;">
-      <input id="a-signup-reg" class="input" type="text" placeholder="중개업 등록번호 (예: 3380-1549)" style="margin-bottom:12px;">
-      <button class="btn-gold" onclick="doAgentSignup()">회원가입</button>
+      <input id="a-signup-reg" class="input" type="text" placeholder="등록번호 (예: 3380-1549)" style="margin-bottom:12px;">
+      <button class="btn-gold" onclick="doSignup()">회원가입</button>
     </div>
-
-    <div id="auth-msg" style="margin-top:12px;font-size:13px;display:none;padding:12px;border-radius:12px;line-height:1.5;"></div>
+    <div id="auth-msg" style="margin-top:12px;font-size:13px;display:none;padding:12px;border-radius:12px;"></div>
   </div>
   <div style="padding:0 24px;">
     <div style="display:flex;flex-direction:column;gap:10px;padding:20px;background:rgba(0,0,0,.03);border-radius:16px;margin-bottom:20px;">
@@ -668,7 +659,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
     <div class="ni on" onclick="go('s-profile')"><i class="ti ti-user"></i><span>프로필</span></div>
   </div>
   <div style="padding:16px 16px 100px;">
-    <button onclick="doAgentLogout()" style="width:100%;padding:13px;background:none;border:1.5px solid rgba(0,0,0,0.08);border-radius:12px;font-size:14px;font-weight:500;color:#6B6B6B;cursor:pointer;font-family:inherit;">로그아웃</button>
+    <button onclick="doLogout()" style="width:100%;padding:13px;background:none;border:1.5px solid rgba(0,0,0,0.08);border-radius:12px;font-size:14px;font-weight:500;color:#6B6B6B;cursor:pointer;font-family:inherit;">로그아웃</button>
   </div>
 </div>
 
@@ -681,10 +672,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
 </div>
 
 <script>
-var sb = window.supabase.createClient(
-  'https://owzbwgihypvzfogycskh.supabase.co',
-  'sb_publishable_Azn9cbYHhUROjWoRU4mwZA_x7UhNnYN'
-);
+var sb=window.supabase.createClient('https://owzbwgihypvzfogycskh.supabase.co','sb_publishable_Azn9cbYHhUROjWoRU4mwZA_x7UhNnYN');
 
 function go(id){
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});
@@ -700,62 +688,77 @@ function go(id){
   });
 }
 
-function switchAgentTab(tab){
+function switchTab(t){
   var l=document.getElementById('atab-login'),s=document.getElementById('atab-signup');
-  var lf=document.getElementById('aform-login'),sf=document.getElementById('aform-signup');
   document.getElementById('auth-msg').style.display='none';
-  if(tab==='login'){
-    l.style.cssText='flex:1;padding:10px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;background:#FFF3DC;border:1.5px solid #E8A020;color:#B87010;text-align:center;';
-    s.style.cssText='flex:1;padding:10px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;background:#fff;border:1.5px solid rgba(0,0,0,0.08);color:#6B6B6B;text-align:center;';
-    lf.style.display='block';sf.style.display='none';
+  if(t==='login'){
+    l.style.background='#FFF3DC';l.style.borderColor='#E8A020';l.style.color='#B87010';
+    s.style.background='#fff';s.style.borderColor='rgba(0,0,0,0.08)';s.style.color='#6B6B6B';
+    document.getElementById('aform-login').style.display='block';
+    document.getElementById('aform-signup').style.display='none';
   } else {
-    s.style.cssText='flex:1;padding:10px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;background:#FFF3DC;border:1.5px solid #E8A020;color:#B87010;text-align:center;';
-    l.style.cssText='flex:1;padding:10px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;background:#fff;border:1.5px solid rgba(0,0,0,0.08);color:#6B6B6B;text-align:center;';
-    lf.style.display='none';sf.style.display='block';
+    s.style.background='#FFF3DC';s.style.borderColor='#E8A020';s.style.color='#B87010';
+    l.style.background='#fff';l.style.borderColor='rgba(0,0,0,0.08)';l.style.color='#6B6B6B';
+    document.getElementById('aform-login').style.display='none';
+    document.getElementById('aform-signup').style.display='block';
   }
 }
-function showMsg(m,e){var el=document.getElementById('auth-msg');el.style.display='block';el.textContent=m;el.style.background=e?'#FEF2F2':'#F0FDF4';el.style.color=e?'#DC2626':'#16A34A';}
+function msg(m,e){var el=document.getElementById('auth-msg');el.style.display='block';el.textContent=m;el.style.background=e?'#FEF2F2':'#F0FDF4';el.style.color=e?'#DC2626':'#16A34A';}
 
 function doKakaoLogin(){sb.auth.signInWithOAuth({provider:'kakao',options:{redirectTo:'https://homestalk-agent.vercel.app'}});}
 
-async function doAgentLogin(){
+async function doLogin(){
   var e=document.getElementById('a-login-email').value.trim(),p=document.getElementById('a-login-pw').value;
-  if(!e){showMsg('이메일을 입력해주세요.',1);return;}
-  if(!p){showMsg('비밀번호를 입력해주세요.',1);return;}
+  if(!e){msg('이메일을 입력해주세요.',1);return;}
+  if(!p){msg('비밀번호를 입력해주세요.',1);return;}
   var r=await sb.auth.signInWithPassword({email:e,password:p});
-  if(r.error){showMsg(r.error.message.includes('Invalid')?'이메일 또는 비밀번호가 틀렸어요.':r.error.message,1);return;}
+  if(r.error){msg(r.error.message.includes('Invalid')?'이메일 또는 비밀번호가 틀렸어요.':r.error.message,1);return;}
   go('s-home');
 }
 
-async function doAgentSignup(){
+async function doSignup(){
   var n=document.getElementById('a-signup-name').value.trim();
   var e=document.getElementById('a-signup-email').value.trim();
   var p=document.getElementById('a-signup-pw').value;
   var reg=document.getElementById('a-signup-reg').value.trim();
-  if(!n){showMsg('이름을 입력해주세요.',1);return;}
-  if(!e){showMsg('이메일을 입력해주세요.',1);return;}
-  if(p.length<6){showMsg('비밀번호는 6자 이상이어야 해요.',1);return;}
+  if(!n){msg('이름을 입력해주세요.',1);return;}
+  if(!e){msg('이메일을 입력해주세요.',1);return;}
+  if(p.length<6){msg('비밀번호는 6자 이상이어야 해요.',1);return;}
   var r=await sb.auth.signUp({email:e,password:p,options:{data:{full_name:n,role:'agent',reg_number:reg}}});
-  if(r.error){showMsg(r.error.message,1);return;}
-  if(r.data.user&&!r.data.session) showMsg('인증 메일을 보냈어요! 이메일을 확인해주세요.',0);
+  if(r.error){msg(r.error.message,1);return;}
+  if(r.data.user&&!r.data.session) msg('인증 메일을 보냈어요!',0);
   else if(r.data.session) go('s-home');
 }
 
-async function doAgentLogout(){await sb.auth.signOut();sessionStorage.removeItem('hz_page');go('s-login');}
+async function doLogout(){await sb.auth.signOut();sessionStorage.removeItem('hz_page');go('s-login');}
 
-// 핵심: 로그인 상태 자동 감지
-sb.auth.onAuthStateChange(function(ev,session){
-  if(session){
-    // 로그인 성공 → URL 정리 후 홈으로
-    if(window.location.hash.includes('access_token')){
+// ★ 카카오 로그인 콜백 처리 ★
+// hash에 access_token이 있으면 카카오에서 돌아온 것
+if(window.location.hash && window.location.hash.includes('access_token')){
+  // 로딩 표시
+  document.addEventListener('DOMContentLoaded',function(){
+    document.getElementById('s-login').innerHTML='<div style="padding:120px 24px;text-align:center;"><div style="font-size:48px;margin-bottom:16px;">⏳</div><div style="font-size:16px;font-weight:600;">카카오 로그인 처리 중...</div></div>';
+  });
+  // 0.5초마다 세션 확인
+  var chk=setInterval(async function(){
+    var r=await sb.auth.getSession();
+    if(r.data.session){
+      clearInterval(chk);
       window.history.replaceState(null,'',window.location.pathname);
+      go('s-home');
     }
-    var saved=sessionStorage.getItem('hz_page');
-    go(saved||'s-home');
-  } else if(ev==='SIGNED_OUT'){
-    go('s-login');
-  }
-});
+  },500);
+  // 10초 후 타임아웃
+  setTimeout(function(){clearInterval(chk);},10000);
+} else {
+  // 일반 접속: 세션 있으면 바로 홈으로
+  sb.auth.getSession().then(function(r){
+    if(r.data.session){
+      var saved=sessionStorage.getItem('hz_page');
+      go(saved||'s-home');
+    }
+  });
+}
 
 function showProfTab(tab){
   document.querySelectorAll('.ptab').forEach(function(t){t.classList.remove('on');});
@@ -765,7 +768,6 @@ function showProfTab(tab){
     if(el) el.style.display=t===tab?'block':'none';
   });
 }
-
 var deferredPrompt;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferredPrompt=e;if(!window.matchMedia('(display-mode:standalone)').matches)document.getElementById('install-banner').style.display='flex';});
 function installPWA(){document.getElementById('install-banner').style.display='none';if(deferredPrompt){deferredPrompt.prompt();deferredPrompt=null;}}
