@@ -7,6 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>홈즈톡 — 중개사 파트너</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta name="theme-color" content="#E8A020">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -46,6 +47,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
 .chip.on{background:var(--gl);border-color:var(--gold);color:var(--gd);font-weight:500;}
 .input{width:100%;padding:13px 14px;border:1.5px solid var(--br);border-radius:12px;font-size:14px;color:var(--tx);background:var(--sf);font-family:inherit;}
 .input:focus{outline:none;border-color:var(--gold);}
+.input:disabled{background:#f0f0f0;color:var(--t2);}
 .section{padding:16px;}
 .label{font-size:12px;font-weight:600;color:var(--t2);margin-bottom:8px;display:block;}
 .card{background:var(--sf);border:.5px solid var(--br);border-radius:16px;padding:16px;margin-bottom:10px;}
@@ -131,8 +133,34 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
     <div class="login-icon">🏠</div>
     <div style="font-size:24px;font-weight:700;color:var(--tx);margin-bottom:8px;">홈<span style="color:var(--gold);">즈</span>톡 파트너</div>
     <div style="font-size:14px;color:var(--t2);line-height:1.7;margin-bottom:28px;">공인중개사 전용 앱이에요.<br>의뢰 관리부터 광고 등록까지 한 번에!</div>
-    <button style="width:100%;padding:14px;background:#FEE500;border:none;border-radius:12px;font-size:16px;font-weight:700;color:#3A1D1D;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;" onclick="go('s-home')"><span style="font-size:20px;">💬</span>카카오로 시작하기</button>
-    <button style="width:100%;padding:14px;background:var(--sf);border:1.5px solid var(--br);border-radius:12px;font-size:15px;font-weight:500;color:var(--t2);cursor:pointer;font-family:inherit;" onclick="go('s-home')">전화번호로 로그인</button>
+    <button style="width:100%;padding:14px;background:#FEE500;border:none;border-radius:12px;font-size:16px;font-weight:700;color:#3A1D1D;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;" onclick="doKakaoLogin()"><span style="font-size:20px;">💬</span>카카오로 시작하기</button>
+
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+      <div style="flex:1;height:1px;background:var(--br);"></div>
+      <span style="font-size:12px;color:var(--t3);">또는 이메일로</span>
+      <div style="flex:1;height:1px;background:var(--br);"></div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <div id="atab-login" style="flex:1;padding:10px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;background:var(--gl);border:1.5px solid var(--gold);color:var(--gd);text-align:center;" onclick="switchAgentTab('login')">로그인</div>
+      <div id="atab-signup" style="flex:1;padding:10px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;background:var(--sf);border:1.5px solid var(--br);color:var(--t2);text-align:center;" onclick="switchAgentTab('signup')">회원가입</div>
+    </div>
+
+    <div id="aform-login">
+      <input id="a-login-email" class="input" type="email" placeholder="이메일" style="margin-bottom:8px;">
+      <input id="a-login-pw" class="input" type="password" placeholder="비밀번호" style="margin-bottom:12px;">
+      <button class="btn-gold" onclick="doAgentLogin()">로그인</button>
+    </div>
+
+    <div id="aform-signup" style="display:none;">
+      <input id="a-signup-name" class="input" type="text" placeholder="이름" style="margin-bottom:8px;">
+      <input id="a-signup-email" class="input" type="email" placeholder="이메일" style="margin-bottom:8px;">
+      <input id="a-signup-pw" class="input" type="password" placeholder="비밀번호 (6자 이상)" style="margin-bottom:8px;">
+      <input id="a-signup-reg" class="input" type="text" placeholder="중개업 등록번호 (예: 3380-1549)" style="margin-bottom:12px;">
+      <button class="btn-gold" onclick="doAgentSignup()">회원가입</button>
+    </div>
+
+    <div id="auth-msg" style="margin-top:12px;font-size:13px;display:none;padding:12px;border-radius:12px;line-height:1.5;"></div>
   </div>
   <div style="padding:0 24px;">
     <div style="display:flex;flex-direction:column;gap:10px;padding:20px;background:rgba(0,0,0,.03);border-radius:16px;margin-bottom:20px;">
@@ -244,7 +272,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
 
   <div style="height:80px;"></div>
   <div class="nav">
-    <div class="ni on"><i class="ti ti-bell"></i><span>의뢰함</span></div>
+    <div class="ni on" onclick="go('s-home')"><i class="ti ti-bell"></i><span>의뢰함</span></div>
     <div class="ni" onclick="go('s-qr')"><i class="ti ti-qrcode"></i><span>내 QR</span></div>
     <div class="ni" onclick="go('s-adup')"><i class="ti ti-speakerphone"></i><span>광고등록</span></div>
     <div class="ni" onclick="go('s-profile')"><i class="ti ti-user"></i><span>프로필</span></div>
@@ -339,7 +367,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
 
   <div class="nav">
     <div class="ni" onclick="go('s-home')"><i class="ti ti-bell"></i><span>의뢰함</span></div>
-    <div class="ni on"><i class="ti ti-qrcode"></i><span>내 QR</span></div>
+    <div class="ni on" onclick="go('s-qr')"><i class="ti ti-qrcode"></i><span>내 QR</span></div>
     <div class="ni" onclick="go('s-adup')"><i class="ti ti-speakerphone"></i><span>광고등록</span></div>
     <div class="ni" onclick="go('s-profile')"><i class="ti ti-user"></i><span>프로필</span></div>
   </div>
@@ -401,7 +429,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
   <div class="nav">
     <div class="ni" onclick="go('s-home')"><i class="ti ti-bell"></i><span>의뢰함</span></div>
     <div class="ni" onclick="go('s-qr')"><i class="ti ti-qrcode"></i><span>내 QR</span></div>
-    <div class="ni on"><i class="ti ti-speakerphone"></i><span>광고등록</span></div>
+    <div class="ni on" onclick="go('s-adup')"><i class="ti ti-speakerphone"></i><span>광고등록</span></div>
     <div class="ni" onclick="go('s-profile')"><i class="ti ti-user"></i><span>프로필</span></div>
   </div>
 </div>
@@ -638,7 +666,12 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
     <div class="ni" onclick="go('s-home')"><i class="ti ti-bell"></i><span>의뢰함</span></div>
     <div class="ni" onclick="go('s-qr')"><i class="ti ti-qrcode"></i><span>내 QR</span></div>
     <div class="ni" onclick="go('s-adup')"><i class="ti ti-speakerphone"></i><span>광고등록</span></div>
-    <div class="ni on"><i class="ti ti-user"></i><span>프로필</span></div>
+    <div class="ni on" onclick="go('s-profile')"><i class="ti ti-user"></i><span>프로필</span></div>
+  </div>
+
+  <!-- 로그아웃 -->
+  <div style="padding:16px 16px 100px;">
+    <button onclick="doAgentLogout()" style="width:100%;padding:13px;background:none;border:1.5px solid var(--br);border-radius:12px;font-size:14px;font-weight:500;color:var(--t2);cursor:pointer;font-family:inherit;">로그아웃</button>
   </div>
 </div>
 
@@ -651,11 +684,120 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
 </div>
 
 <script>
+// Supabase 연결
+var supabase = window.supabase.createClient(
+  'https://owzbwgihypvzfogycskh.supabase.co',
+  'sb_publishable_Azn9cbYHhUROjWoRU4mwZA_x7UhNnYN'
+);
+
+// 화면 전환 + 네비게이션 활성화 + URL 해시 저장
 function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   const el=document.getElementById(id);
   if(el){el.classList.add('on');window.scrollTo(0,0);}
+  if(id !== 's-login') location.hash = id;
+  document.querySelectorAll('.nav').forEach(function(nav){
+    nav.querySelectorAll('.ni').forEach(function(ni){
+      ni.classList.remove('on');
+      var oc = ni.getAttribute('onclick') || '';
+      if(oc.indexOf(id) > -1) ni.classList.add('on');
+    });
+  });
 }
+
+// 로그인/회원가입 탭 전환
+function switchAgentTab(tab) {
+  var lTab = document.getElementById('atab-login');
+  var sTab = document.getElementById('atab-signup');
+  var lForm = document.getElementById('aform-login');
+  var sForm = document.getElementById('aform-signup');
+  hideAuthMsg();
+  if (tab === 'login') {
+    lTab.style.background='var(--gl)';lTab.style.borderColor='var(--gold)';lTab.style.color='var(--gd)';
+    sTab.style.background='var(--sf)';sTab.style.borderColor='var(--br)';sTab.style.color='var(--t2)';
+    lForm.style.display='block';sForm.style.display='none';
+  } else {
+    sTab.style.background='var(--gl)';sTab.style.borderColor='var(--gold)';sTab.style.color='var(--gd)';
+    lTab.style.background='var(--sf)';lTab.style.borderColor='var(--br)';lTab.style.color='var(--t2)';
+    lForm.style.display='none';sForm.style.display='block';
+  }
+}
+
+function showAuthMsg(msg, isErr) {
+  var el = document.getElementById('auth-msg');
+  el.style.display='block'; el.textContent=msg;
+  el.style.background = isErr ? '#FEF2F2' : '#F0FDF4';
+  el.style.color = isErr ? '#DC2626' : '#16A34A';
+}
+function hideAuthMsg() { document.getElementById('auth-msg').style.display='none'; }
+
+// 카카오 로그인
+async function doKakaoLogin() {
+  try {
+    await supabase.auth.signInWithOAuth({
+      provider: 'kakao',
+      options: { redirectTo: 'https://homestalk-agent.vercel.app' }
+    });
+  } catch(e) { showAuthMsg('오류: '+e.message, true); }
+}
+
+// 이메일 로그인
+async function doAgentLogin() {
+  var email = document.getElementById('a-login-email').value.trim();
+  var pw = document.getElementById('a-login-pw').value;
+  if (!email) { showAuthMsg('이메일을 입력해주세요.', true); return; }
+  if (!pw) { showAuthMsg('비밀번호를 입력해주세요.', true); return; }
+  try {
+    var r = await supabase.auth.signInWithPassword({ email: email, password: pw });
+    if (r.error) {
+      showAuthMsg(r.error.message.includes('Invalid') ? '이메일 또는 비밀번호가 틀렸어요.' : r.error.message, true);
+      return;
+    }
+    go('s-home');
+  } catch(e) { showAuthMsg('오류: '+e.message, true); }
+}
+
+// 회원가입
+async function doAgentSignup() {
+  var name = document.getElementById('a-signup-name').value.trim();
+  var email = document.getElementById('a-signup-email').value.trim();
+  var pw = document.getElementById('a-signup-pw').value;
+  var reg = document.getElementById('a-signup-reg').value.trim();
+  if (!name) { showAuthMsg('이름을 입력해주세요.', true); return; }
+  if (!email) { showAuthMsg('이메일을 입력해주세요.', true); return; }
+  if (pw.length < 6) { showAuthMsg('비밀번호는 6자 이상이어야 해요.', true); return; }
+  try {
+    var r = await supabase.auth.signUp({
+      email: email, password: pw,
+      options: { data: { full_name: name, role: 'agent', reg_number: reg } }
+    });
+    if (r.error) { showAuthMsg(r.error.message, true); return; }
+    if (r.data.user && !r.data.session) {
+      showAuthMsg('인증 메일을 보냈어요! 이메일을 확인해주세요.', false);
+    } else if (r.data.session) { go('s-home'); }
+  } catch(e) { showAuthMsg('오류: '+e.message, true); }
+}
+
+// 로그아웃
+async function doAgentLogout() {
+  await supabase.auth.signOut();
+  location.hash = '';
+  go('s-login');
+}
+
+// 로그인 상태 확인 (페이지 로드 시)
+supabase.auth.getSession().then(function(r) {
+  if (r.data.session) {
+    var hash = location.hash.replace('#','');
+    go(hash && document.getElementById(hash) ? hash : 's-home');
+  }
+});
+
+// 로그인 상태 변화 감지
+supabase.auth.onAuthStateChange(function(ev, session) {
+  if (ev === 'SIGNED_IN' && session) go('s-home');
+  else if (ev === 'SIGNED_OUT') go('s-login');
+});
 
 function showProfTab(tab){
   document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('on'));
