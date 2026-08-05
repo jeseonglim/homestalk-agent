@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>홈즈톡 — 중개사 파트너</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
+<meta name="theme-color" content="#E8A020">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="홈즈톡 파트너">
+<meta property="og:title" content="홈즈톡 — 중개사 파트너">
+<meta property="og:description" content="홈즈톡 인증 중개사 전용 앱. 의뢰 관리, QR 접수, 광고 등록, 프로필 관리">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --gold:#E8A020;--gl:#FFF3DC;--gd:#B87010;
+  --bg:#F4F3EF;--sf:#fff;--br:rgba(0,0,0,0.08);
+  --tx:#1A1A1A;--t2:#6B6B6B;--t3:#9B9B9B;
+  --gn:#16A34A;--gnb:#DCFCE7;
+  --rd:#DC2626;--rdb:#FEE2E2;
+  --or:#F97316;--orb:#FFF7ED;
+  --pu:#7C3AED;--pub:#F5F3FF;
+  --bl:#2563EB;--blb:#EFF6FF;
+}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh;max-width:420px;margin:0 auto;}
+.screen{display:none;}
+.screen.on{display:block;}
+
+/* 공통 */
+.hdr{padding:12px 16px;background:var(--sf);border-bottom:.5px solid var(--br);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.logo{font-size:17px;font-weight:700;color:var(--tx);}
+.logo span{color:var(--gold);}
+.back{font-size:20px;color:var(--t2);cursor:pointer;padding:4px;}
+.nav{display:flex;background:var(--sf);border-top:.5px solid var(--br);position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;z-index:100;}
+.ni{flex:1;padding:10px 4px;text-align:center;cursor:pointer;}
+.ni i{font-size:20px;color:var(--t3);display:block;margin-bottom:2px;}
+.ni span{font-size:10px;color:var(--t3);}
+.ni.on i,.ni.on span{color:var(--gold);}
+.btn-gold{width:100%;padding:14px;background:var(--gold);border:none;border-radius:12px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;}
+.btn-outline{width:100%;padding:13px;background:var(--sf);border:1.5px solid var(--gold);border-radius:12px;font-size:14px;font-weight:500;color:var(--gd);cursor:pointer;font-family:inherit;}
+.chip{padding:7px 14px;border-radius:20px;border:.5px solid var(--br);font-size:12px;color:var(--t2);cursor:pointer;background:var(--sf);display:inline-block;}
+.chip.on{background:var(--gl);border-color:var(--gold);color:var(--gd);font-weight:500;}
+.input{width:100%;padding:13px 14px;border:1.5px solid var(--br);border-radius:12px;font-size:14px;color:var(--tx);background:var(--sf);font-family:inherit;}
+.input:focus{outline:none;border-color:var(--gold);}
+.section{padding:16px;}
+.label{font-size:12px;font-weight:600;color:var(--t2);margin-bottom:8px;display:block;}
+.card{background:var(--sf);border:.5px solid var(--br);border-radius:16px;padding:16px;margin-bottom:10px;}
+.card.gold{border-color:var(--gold);background:var(--gl);}
+.card.pu{border-color:var(--pu);background:var(--pub);}
+.card.green{border-color:var(--gn);background:var(--gnb);}
+.card.orange{border-color:var(--or);background:var(--orb);}
+.tag{padding:3px 9px;border-radius:8px;font-size:11px;}
+.tag-g{background:var(--gl);color:var(--gd);}
+.tag-gy{background:rgba(0,0,0,.05);color:var(--t2);}
+.tag-gn{background:var(--gnb);color:var(--gn);}
+.tag-wh{background:var(--gold);color:#fff;}
+.tag-pu{background:var(--pub);color:var(--pu);}
+.tag-or{background:var(--orb);color:var(--or);}
+.av{width:44px;height:44px;border-radius:50%;background:var(--gl);border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--gd);flex-shrink:0;}
+.pb{padding-bottom:80px;}
+.divider{height:.5px;background:var(--br);margin:0 16px;}
+
+/* 로그인 화면 */
+.login-hero{padding:48px 24px 32px;text-align:center;}
+.login-icon{width:80px;height:80px;border-radius:24px;background:var(--gold);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:36px;}
+
+/* 의뢰함 */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px 16px;border-bottom:.5px solid var(--br);}
+.stat{background:rgba(0,0,0,.04);border-radius:10px;padding:10px 6px;text-align:center;}
+.stat-val{font-size:20px;font-weight:700;}
+.stat-label{font-size:10px;color:var(--t3);margin-top:2px;}
+.tabs{display:flex;border-bottom:.5px solid var(--br);}
+.tab{flex:1;padding:10px;text-align:center;font-size:12px;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;}
+.tab.on{color:var(--gold);border-bottom-color:var(--gold);font-weight:600;}
+.req-card{margin:8px 16px;border-radius:14px;overflow:hidden;border:.5px solid var(--br);}
+.req-card.gold{border-color:var(--gold);}
+.req-card.pu{border-color:var(--pu);}
+.req-hdr{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:.5px solid var(--br);}
+.req-card.gold .req-hdr{background:var(--gl);border-bottom-color:rgba(232,160,32,.2);}
+.req-card.pu .req-hdr{background:var(--pub);border-bottom-color:rgba(124,58,237,.15);}
+.req-body{padding:12px 14px;background:var(--sf);}
+.act-btns{display:flex;gap:6px;margin-top:10px;}
+.act-btn{flex:1;padding:9px;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;text-align:center;border:none;font-family:inherit;}
+.act-btn.gold{background:var(--gold);color:#fff;}
+.act-btn.outline{background:var(--sf);border:.5px solid var(--br);color:var(--t2);}
+.act-btn.pu{background:var(--pu);color:#fff;}
+
+/* 광고 등록 */
+.ch-tabs{display:flex;overflow-x:auto;border-bottom:.5px solid var(--br);padding:0 8px;}
+.ch-tab{flex-shrink:0;padding:10px 14px;font-size:13px;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;}
+.ch-tab.on{color:var(--gold);border-bottom-color:var(--gold);font-weight:600;}
+
+/* 프로필 */
+.prof-tab{display:flex;overflow-x:auto;gap:6px;padding:10px 16px;border-bottom:.5px solid var(--br);}
+.ptab{flex-shrink:0;padding:7px 14px;border-radius:20px;border:.5px solid var(--br);font-size:12px;color:var(--t2);cursor:pointer;background:var(--sf);}
+.ptab.on{background:var(--gl);border-color:var(--gold);color:var(--gd);font-weight:500;}
+.mbti-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.mbti-item{background:rgba(0,0,0,.03);border-radius:10px;padding:10px;}
+.mbti-label{font-size:11px;color:var(--t3);text-align:center;margin-bottom:6px;}
+.mbti-btns{display:flex;gap:5px;}
+.mbti-btn{flex:1;padding:8px;border-radius:8px;border:.5px solid var(--br);font-size:13px;font-weight:500;text-align:center;cursor:pointer;background:var(--sf);color:var(--t2);}
+.mbti-btn.on{background:var(--gl);border-color:var(--gold);color:var(--gd);}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.photo-item{aspect-ratio:1;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;}
+.photo-item.filled{border:1.5px solid var(--gold);background:var(--gl);}
+.photo-item.empty{border:1.5px dashed var(--br);background:rgba(0,0,0,.02);}
+
+/* QR */
+.qr-box{margin:20px 16px;background:var(--sf);border:1.5px solid var(--gold);border-radius:18px;padding:20px;text-align:center;}
+.qr-frame{width:160px;height:160px;border:2px solid var(--gold);border-radius:14px;margin:0 auto 14px;position:relative;display:flex;align-items:center;justify-content:center;background:#fff;}
+.qr-corner{position:absolute;width:22px;height:22px;border:3px solid var(--gold);}
+.qr-corner.tl{top:4px;left:4px;border-right:none;border-bottom:none;}
+.qr-corner.tr{top:4px;right:4px;border-left:none;border-bottom:none;}
+.qr-corner.bl{bottom:4px;left:4px;border-right:none;border-top:none;}
+.qr-corner.br{bottom:4px;right:4px;border-left:none;border-top:none;}
+
+/* PWA 배너 */
+#install-banner{display:none;position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:388px;background:var(--sf);border:1.5px solid var(--gold);border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:200;align-items:center;gap:12px;}
+#ios-banner{display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;background:#1A1A1A;border-radius:20px 20px 0 0;padding:16px;z-index:200;}
+</style>
+</head>
+<body>
+
+<!-- ══ 로그인 ══ -->
+<div class="screen on" id="s-login">
+  <div class="login-hero">
+    <div class="login-icon">🏠</div>
+    <div style="font-size:24px;font-weight:700;color:var(--tx);margin-bottom:8px;">홈<span style="color:var(--gold);">즈</span>톡 파트너</div>
+    <div style="font-size:14px;color:var(--t2);line-height:1.7;margin-bottom:28px;">공인중개사 전용 앱이에요.<br>의뢰 관리부터 광고 등록까지 한 번에!</div>
+    <button style="width:100%;padding:14px;background:#FEE500;border:none;border-radius:12px;font-size:16px;font-weight:700;color:#3A1D1D;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;" onclick="go('s-home')"><span style="font-size:20px;">💬</span>카카오로 시작하기</button>
+    <button style="width:100%;padding:14px;background:var(--sf);border:1.5px solid var(--br);border-radius:12px;font-size:15px;font-weight:500;color:var(--t2);cursor:pointer;font-family:inherit;" onclick="go('s-home')">전화번호로 로그인</button>
+  </div>
+  <div style="padding:0 24px;">
+    <div style="display:flex;flex-direction:column;gap:10px;padding:20px;background:rgba(0,0,0,.03);border-radius:16px;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;gap:12px;"><span style="font-size:22px;">✨</span><div><div style="font-size:14px;font-weight:600;margin-bottom:2px;">AI 중개사 매칭</div><div style="font-size:12px;color:var(--t2);">MBTI·사주 등록하면 소비자와 자동 매칭</div></div></div>
+      <div style="display:flex;align-items:center;gap:12px;"><span style="font-size:22px;">📱</span><div><div style="font-size:14px;font-weight:600;margin-bottom:2px;">QR 물건 접수</div><div style="font-size:12px;color:var(--t2);">사무실 QR로 방문 고객 물건 바로 접수</div></div></div>
+      <div style="display:flex;align-items:center;gap:12px;"><span style="font-size:22px;">📊</span><div><div style="font-size:14px;font-weight:600;margin-bottom:2px;">광고 채널 관리</div><div style="font-size:12px;color:var(--t2);">네이버·직방·다방 광고 한 곳에서 관리</div></div></div>
+      <div style="display:flex;align-items:center;gap:12px;"><span style="font-size:22px;">🏆</span><div><div style="font-size:14px;font-weight:600;margin-bottom:2px;">홈즈톡 인증 회원</div><div style="font-size:12px;color:var(--t2);">연 30만원 · AI 매칭 우선 노출</div></div></div>
+    </div>
+    <div style="text-align:center;font-size:12px;color:var(--t3);padding-bottom:30px;">공인중개사 등록번호로 본인 확인 후 이용 가능해요</div>
+  </div>
+</div>
+
+<!-- ══ 의뢰함 (홈) ══ -->
+<div class="screen" id="s-home">
+  <div class="hdr">
+    <div class="logo">홈<span>즈</span>톡 <span style="font-size:11px;font-weight:400;color:var(--t3);">파트너</span></div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="position:relative;"><i class="ti ti-bell" style="font-size:22px;color:var(--t2);"></i><div style="position:absolute;top:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:var(--gold);border:1.5px solid #fff;"></div></div>
+      <i class="ti ti-settings" style="font-size:22px;color:var(--t2);cursor:pointer;" onclick="go('s-profile')"></i>
+    </div>
+  </div>
+
+  <!-- 중개사 정보 바 -->
+  <div style="padding:12px 16px;background:var(--gl);border-bottom:.5px solid rgba(232,160,32,.3);display:flex;align-items:center;gap:10px;">
+    <div class="av">임제</div>
+    <div style="flex:1;">
+      <div style="font-size:14px;font-weight:600;color:var(--tx);">임제성 공인중개사</div>
+      <div style="font-size:11px;color:var(--gd);display:flex;align-items:center;gap:4px;margin-top:2px;"><i class="ti ti-circle-check" style="font-size:12px;"></i>홈즈톡 인증 회원</div>
+    </div>
+    <div style="font-size:11px;padding:3px 10px;background:var(--gold);color:#fff;border-radius:20px;font-weight:600;">NEW 3</div>
+  </div>
+
+  <!-- 통계 -->
+  <div class="stat-grid">
+    <div class="stat"><div class="stat-val" style="color:var(--gd);">8</div><div class="stat-label">이번달 의뢰</div></div>
+    <div class="stat"><div class="stat-val" style="color:var(--or);">3</div><div class="stat-label">대기 중</div></div>
+    <div class="stat"><div class="stat-val" style="color:var(--gn);">5</div><div class="stat-label">광고 진행</div></div>
+    <div class="stat"><div class="stat-val" style="color:var(--pu);">2</div><div class="stat-label">QR 접수</div></div>
+  </div>
+
+  <!-- 탭 -->
+  <div class="tabs">
+    <div class="tab on">새 의뢰 <span style="background:var(--gold);color:#fff;font-size:10px;padding:1px 6px;border-radius:8px;margin-left:3px;">3</span></div>
+    <div class="tab">QR접수 <span style="background:var(--pu);color:#fff;font-size:10px;padding:1px 6px;border-radius:8px;margin-left:3px;">2</span></div>
+    <div class="tab">진행중</div>
+    <div class="tab">완료</div>
+  </div>
+
+  <!-- 의뢰 카드 1 -->
+  <div class="req-card gold" style="margin-top:10px;">
+    <div class="req-hdr">
+      <div style="display:flex;align-items:center;gap:6px;"><span class="tag tag-wh" style="font-size:10px;">새 의뢰</span></div>
+      <span style="font-size:11px;color:var(--t3);">방금 전</span>
+    </div>
+    <div class="req-body">
+      <div style="font-size:15px;font-weight:700;margin-bottom:6px;">검단푸르지오 33평</div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">
+        <span class="tag tag-g">매매</span>
+        <span class="tag tag-gy">아파트</span>
+        <span class="tag tag-gy">3억 5천</span>
+        <span class="tag tag-gy">3개월 이내</span>
+      </div>
+      <div style="padding:8px 10px;background:rgba(0,0,0,.04);border-radius:8px;font-size:12px;color:var(--t2);margin-bottom:10px;">😷 마스크 착용 부탁드려요</div>
+      <div style="padding:8px 10px;background:var(--gl);border-radius:8px;font-size:12px;color:var(--gd);margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="ti ti-sparkles" style="font-size:13px;"></i>AI 궁합 98% · INFP 소비자</div>
+      <div class="act-btns">
+        <div class="act-btn outline"><i class="ti ti-phone" style="font-size:13px;"></i> 전화</div>
+        <div class="act-btn gold" onclick="alert('수락 완료! 소비자에게 알림이 전송됐어요.')">수락하고 연락</div>
+        <div class="act-btn outline" onclick="go('s-adup')">광고등록</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 의뢰 카드 2 -->
+  <div class="req-card gold">
+    <div class="req-hdr">
+      <div style="display:flex;align-items:center;gap:6px;"><span class="tag tag-wh" style="font-size:10px;">새 의뢰</span></div>
+      <span style="font-size:11px;color:var(--t3);">15분 전</span>
+    </div>
+    <div class="req-body">
+      <div style="font-size:15px;font-weight:700;margin-bottom:6px;">검단 한신더휴 25평</div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">
+        <span class="tag tag-g">전세</span>
+        <span class="tag tag-gy">아파트</span>
+        <span class="tag tag-gy">2억 2천</span>
+      </div>
+      <div class="act-btns">
+        <div class="act-btn outline"><i class="ti ti-phone" style="font-size:13px;"></i> 전화</div>
+        <div class="act-btn gold" onclick="alert('수락 완료!')">수락하고 연락</div>
+        <div class="act-btn outline" onclick="go('s-adup')">광고등록</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR 의뢰 카드 -->
+  <div class="req-card pu">
+    <div class="req-hdr">
+      <div style="display:flex;align-items:center;gap:6px;"><span class="tag tag-pu" style="font-size:10px;"><i class="ti ti-qrcode" style="font-size:10px;"></i> QR접수</span></div>
+      <span style="font-size:11px;color:var(--t3);">32분 전</span>
+    </div>
+    <div class="req-body">
+      <div style="font-size:15px;font-weight:700;margin-bottom:6px;">아파트 · 매매</div>
+      <div style="font-size:12px;color:var(--t2);margin-bottom:10px;">사무실 방문 고객이 QR코드로 직접 접수했어요</div>
+      <div class="act-btns">
+        <div class="act-btn outline"><i class="ti ti-phone" style="font-size:13px;"></i> 전화</div>
+        <div class="act-btn pu" onclick="alert('확인 연락 완료!')">접수 확인 연락</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="height:80px;"></div>
+  <div class="nav">
+    <div class="ni on"><i class="ti ti-bell"></i><span>의뢰함</span></div>
+    <div class="ni" onclick="go('s-qr')"><i class="ti ti-qrcode"></i><span>내 QR</span></div>
+    <div class="ni" onclick="go('s-adup')"><i class="ti ti-speakerphone"></i><span>광고등록</span></div>
+    <div class="ni" onclick="go('s-profile')"><i class="ti ti-user"></i><span>프로필</span></div>
+  </div>
+</div>
+
+<!-- ══ 내 QR코드 ══ -->
+<div class="screen" id="s-qr">
+  <div class="hdr">
+    <span class="back" onclick="go('s-home')"><i class="ti ti-arrow-left"></i></span>
+    <div class="logo">내 QR코드</div>
+    <i class="ti ti-download" style="font-size:20px;color:var(--t2);cursor:pointer;" onclick="alert('QR 이미지가 저장됐어요!')"></i>
+  </div>
+
+  <div class="qr-box">
+    <div style="font-size:12px;color:var(--gd);margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:5px;"><i class="ti ti-sparkles" style="font-size:13px;"></i>홈즈톡 인증 중개사 QR코드</div>
+    <div class="qr-frame">
+      <div class="qr-corner tl"></div>
+      <div class="qr-corner tr"></div>
+      <div class="qr-corner bl"></div>
+      <div class="qr-corner br"></div>
+      <svg width="110" height="110" viewBox="0 0 110 110">
+        <rect x="8" y="8" width="28" height="28" rx="3" fill="none" stroke="#1A1A1A" stroke-width="2.5"/>
+        <rect x="14" y="14" width="16" height="16" fill="#1A1A1A"/>
+        <rect x="74" y="8" width="28" height="28" rx="3" fill="none" stroke="#1A1A1A" stroke-width="2.5"/>
+        <rect x="80" y="14" width="16" height="16" fill="#1A1A1A"/>
+        <rect x="8" y="74" width="28" height="28" rx="3" fill="none" stroke="#1A1A1A" stroke-width="2.5"/>
+        <rect x="14" y="80" width="16" height="16" fill="#1A1A1A"/>
+        <rect x="46" y="8" width="6" height="6" fill="#E8A020"/>
+        <rect x="54" y="8" width="6" height="6" fill="#1A1A1A"/>
+        <rect x="46" y="16" width="6" height="6" fill="#1A1A1A"/>
+        <rect x="54" y="16" width="6" height="6" fill="#E8A020"/>
+        <rect x="46" y="46" width="6" height="6" fill="#E8A020"/>
+        <rect x="54" y="46" width="6" height="6" fill="#1A1A1A"/>
+        <rect x="62" y="46" width="6" height="6" fill="#E8A020"/>
+        <rect x="70" y="46" width="6" height="6" fill="#1A1A1A"/>
+        <rect x="78" y="46" width="6" height="6" fill="#E8A020"/>
+        <rect x="86" y="46" width="6" height="6" fill="#1A1A1A"/>
+        <rect x="94" y="46" width="6" height="6" fill="#E8A020"/>
+        <rect x="46" y="54" width="6" height="6" fill="#1A1A1A"/>
+        <rect x="54" y="54" width="6" height="6" fill="#E8A020"/>
+        <rect x="62" y="54" width="6" height="6" fill="#1A1A1A"/>
+        <rect x="70" y="54" width="6" height="6" fill="#E8A020"/>
+        <rect x="78" y="54" width="6" height="6" fill="#1A1A1A"/>
+        <rect x="46" y="62" width="6" height="6" fill="#E8A020"/>
+        <rect x="54" y="62" width="6" height="6" fill="#1A1A1A"/>
+        <rect x="62" y="62" width="6" height="6" fill="#E8A020"/>
+        <rect x="46" y="70" width="6" height="6" fill="#1A1A1A"/>
+        <rect x="54" y="70" width="6" height="6" fill="#E8A020"/>
+        <rect x="62" y="70" width="6" height="6" fill="#1A1A1A"/>
+        <rect x="70" y="70" width="6" height="6" fill="#E8A020"/>
+        <rect x="78" y="70" width="6" height="6" fill="#1A1A1A"/>
+        <rect x="86" y="70" width="6" height="6" fill="#E8A020"/>
+        <rect x="46" y="78" width="6" height="6" fill="#E8A020"/>
+        <rect x="54" y="78" width="6" height="6" fill="#1A1A1A"/>
+        <rect x="62" y="78" width="6" height="6" fill="#E8A020"/>
+        <rect x="46" y="86" width="6" height="6" fill="#1A1A1A"/>
+        <rect x="54" y="86" width="6" height="6" fill="#E8A020"/>
+        <rect x="46" y="94" width="6" height="6" fill="#E8A020"/>
+        <rect x="54" y="94" width="6" height="6" fill="#1A1A1A"/>
+        <rect x="62" y="94" width="6" height="6" fill="#E8A020"/>
+      </svg>
+    </div>
+    <div style="font-size:15px;font-weight:700;color:var(--tx);margin-bottom:4px;">임제성 · 검단부동산</div>
+    <div style="font-size:12px;color:var(--t3);">스캔하면 물건 접수 화면으로 이동해요</div>
+  </div>
+
+  <!-- QR 포함 정보 -->
+  <div style="padding:0 16px;margin-bottom:12px;">
+    <div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:8px;">QR코드에 포함된 정보</div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(0,0,0,.03);border-radius:10px;"><i class="ti ti-user-circle" style="font-size:18px;color:var(--gold);"></i><span style="flex:1;font-size:13px;">중개사 정보 자동 연결</span><i class="ti ti-check" style="font-size:15px;color:var(--gn);"></i></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(0,0,0,.03);border-radius:10px;"><i class="ti ti-map-pin" style="font-size:18px;color:var(--gold);"></i><span style="flex:1;font-size:13px;">사무실 위치 자동 입력</span><i class="ti ti-check" style="font-size:15px;color:var(--gn);"></i></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(0,0,0,.03);border-radius:10px;"><i class="ti ti-brand-instagram" style="font-size:18px;color:var(--gold);"></i><span style="flex:1;font-size:13px;">SNS 프로필 자동 연결</span><i class="ti ti-check" style="font-size:15px;color:var(--gn);"></i></div>
+    </div>
+  </div>
+
+  <!-- 공유 옵션 -->
+  <div style="padding:0 16px 100px;display:flex;flex-direction:column;gap:8px;">
+    <div style="display:flex;align-items:center;gap:10px;padding:14px;border:.5px solid var(--br);border-radius:12px;cursor:pointer;" onclick="alert('인쇄 설정이 열려요!')">
+      <i class="ti ti-printer" style="font-size:20px;color:var(--t2);"></i>
+      <div style="flex:1;"><div style="font-size:14px;font-weight:500;">사무실 프린트 출력</div><div style="font-size:12px;color:var(--t3);margin-top:2px;">A4 / 명함 / 스티커</div></div>
+      <i class="ti ti-chevron-right" style="font-size:16px;color:var(--t3);"></i>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;padding:14px;border:.5px solid var(--br);border-radius:12px;cursor:pointer;" onclick="alert('링크가 복사됐어요!')">
+      <i class="ti ti-link" style="font-size:20px;color:var(--t2);"></i>
+      <div style="flex:1;"><div style="font-size:14px;font-weight:500;">링크로 공유</div><div style="font-size:12px;color:var(--t3);margin-top:2px;">카카오톡 · 문자</div></div>
+      <i class="ti ti-chevron-right" style="font-size:16px;color:var(--t3);"></i>
+    </div>
+    <button class="btn-gold" onclick="alert('QR 이미지가 저장됐어요!')"><i class="ti ti-download" style="font-size:16px;"></i> QR코드 저장하기</button>
+  </div>
+
+  <div class="nav">
+    <div class="ni" onclick="go('s-home')"><i class="ti ti-bell"></i><span>의뢰함</span></div>
+    <div class="ni on"><i class="ti ti-qrcode"></i><span>내 QR</span></div>
+    <div class="ni" onclick="go('s-adup')"><i class="ti ti-speakerphone"></i><span>광고등록</span></div>
+    <div class="ni" onclick="go('s-profile')"><i class="ti ti-user"></i><span>프로필</span></div>
+  </div>
+</div>
+
+<!-- ══ 광고 등록 ══ -->
+<div class="screen" id="s-adup">
+  <div class="hdr">
+    <span class="back" onclick="go('s-home')"><i class="ti ti-arrow-left"></i></span>
+    <div class="logo">광고 등록</div>
+  </div>
+
+  <!-- 의뢰 정보 -->
+  <div style="margin:12px 16px;padding:14px;background:var(--gl);border:1.5px solid var(--gold);border-radius:14px;">
+    <div style="font-size:11px;color:var(--gd);margin-bottom:6px;display:flex;align-items:center;gap:4px;"><i class="ti ti-user" style="font-size:12px;"></i>소비자 의뢰 내용</div>
+    <div style="font-size:15px;font-weight:700;margin-bottom:5px;">검단푸르지오 33평 · 매매 3억 5천</div>
+    <div style="font-size:13px;color:var(--t2);">3개월 이내 · 😷 마스크 착용 요청</div>
+  </div>
+
+  <!-- 채널 탭 -->
+  <div class="ch-tabs">
+    <div class="ch-tab on">🟢 네이버</div>
+    <div class="ch-tab">🔵 직방</div>
+    <div class="ch-tab">🟠 다방</div>
+    <div class="ch-tab">📝 블로그</div>
+    <div class="ch-tab">▶️ 유튜브</div>
+  </div>
+
+  <div class="section">
+    <div class="label">광고 등록 가격</div>
+    <div style="position:relative;margin-bottom:8px;">
+      <input class="input" type="text" value="35000">
+      <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--t3);">만원</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gn);"><i class="ti ti-check" style="font-size:14px;"></i>희망가 3억 5천과 정확히 일치해요 ✓</div>
+  </div>
+
+  <div class="section" style="border-top:.5px solid var(--br);">
+    <div class="label">광고 URL</div>
+    <div style="display:flex;gap:8px;">
+      <input class="input" style="flex:1;" placeholder="https://land.naver.com/...">
+      <button style="padding:13px 16px;background:var(--gold);border:none;border-radius:12px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;font-family:inherit;" onclick="alert('URL 확인 완료!')">확인</button>
+    </div>
+  </div>
+
+  <div class="section" style="border-top:.5px solid var(--br);">
+    <div class="label">광고 스크린샷</div>
+    <div style="border:2px dashed var(--br);border-radius:12px;padding:24px;text-align:center;cursor:pointer;" onclick="alert('카메라/갤러리에서 사진을 선택하세요')">
+      <i class="ti ti-camera" style="font-size:28px;color:var(--t3);display:block;margin-bottom:8px;"></i>
+      <div style="font-size:13px;color:var(--t2);">광고 화면 캡처 업로드</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:4px;">최대 5장</div>
+    </div>
+  </div>
+
+  <div style="padding:0 16px 100px;">
+    <button class="btn-gold" onclick="alert('소비자에게 알림이 전송됐어요! 🎉')">소비자에게 광고 완료 알림 보내기</button>
+  </div>
+
+  <div class="nav">
+    <div class="ni" onclick="go('s-home')"><i class="ti ti-bell"></i><span>의뢰함</span></div>
+    <div class="ni" onclick="go('s-qr')"><i class="ti ti-qrcode"></i><span>내 QR</span></div>
+    <div class="ni on"><i class="ti ti-speakerphone"></i><span>광고등록</span></div>
+    <div class="ni" onclick="go('s-profile')"><i class="ti ti-user"></i><span>프로필</span></div>
+  </div>
+</div>
+
+<!-- ══ 프로필 ══ -->
+<div class="screen" id="s-profile">
+  <div class="hdr">
+    <span class="back" onclick="go('s-home')"><i class="ti ti-arrow-left"></i></span>
+    <div class="logo">내 프로필</div>
+    <span style="font-size:14px;color:var(--gold);cursor:pointer;font-weight:500;" onclick="alert('프로필이 저장됐어요!')">저장</span>
+  </div>
+
+  <!-- 프로필 카드 -->
+  <div style="margin:12px 16px;padding:14px;background:var(--gl);border:1.5px solid var(--gold);border-radius:16px;display:flex;align-items:center;gap:12px;">
+    <div class="av" style="width:52px;height:52px;font-size:16px;">임제</div>
+    <div style="flex:1;">
+      <div style="font-size:16px;font-weight:700;color:var(--tx);">임제성 공인중개사</div>
+      <div style="font-size:12px;color:var(--t2);margin-top:3px;">검단부동산 · 경력 12년</div>
+      <div style="display:inline-block;font-size:10px;padding:2px 9px;background:var(--gold);color:#fff;border-radius:8px;margin-top:5px;">홈즈톡 인증</div>
+    </div>
+    <div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:var(--gd);">ISTJ</div><div style="font-size:10px;color:var(--gd);">MBTI</div></div>
+  </div>
+
+  <!-- 프로필 탭 -->
+  <div class="prof-tab">
+    <div class="ptab on" onclick="showProfTab('기본')">기본정보</div>
+    <div class="ptab" onclick="showProfTab('MBTI')">MBTI</div>
+    <div class="ptab" onclick="showProfTab('사주')">사주</div>
+    <div class="ptab" onclick="showProfTab('사진')">사진</div>
+    <div class="ptab" onclick="showProfTab('SNS')">SNS</div>
+    <div class="ptab" onclick="showProfTab('미리보기')">👁️ 미리보기</div>
+  </div>
+
+  <!-- 기본정보 탭 -->
+  <div id="prof-기본" class="section pb">
+    <div class="label">사무실 이름</div>
+    <input class="input" value="검단부동산" style="margin-bottom:12px;">
+    <div class="label">대표자명</div>
+    <input class="input" value="임제성" style="margin-bottom:12px;">
+    <div class="label">전화번호</div>
+    <input class="input" value="032-123-4567" style="margin-bottom:12px;">
+    <div class="label">주소</div>
+    <input class="input" value="인천 서구 원당대로840번길 5" style="margin-bottom:12px;">
+    <div class="label">한 줄 소개</div>
+    <textarea class="input" rows="3" style="resize:none;">검단신도시에서 12년째 활동 중입니다. 강요 없이 천천히 비교하실 수 있도록 도와드려요.</textarea>
+    <div style="margin-top:12px;"><div class="label">전문 분야</div><div style="display:flex;gap:6px;flex-wrap:wrap;"><div class="chip on">아파트</div><div class="chip on">매매</div><div class="chip">전월세</div><div class="chip">빌라</div></div></div>
+    <div style="margin-top:12px;"><div class="label">스타일 태그</div><div style="display:flex;gap:6px;flex-wrap:wrap;"><div class="chip on">#꼼꼼한설명</div><div class="chip on">#강요없음</div><div class="chip">#빠른처리</div><div class="chip">#친절</div></div></div>
+  </div>
+
+  <!-- MBTI 탭 -->
+  <div id="prof-MBTI" class="section pb" style="display:none;">
+    <div style="padding:12px;background:var(--gl);border-radius:12px;margin-bottom:16px;font-size:13px;color:var(--gd);line-height:1.6;">MBTI를 등록하면 AI 매칭에서 나와 맞는 소비자에게 <strong>우선 추천</strong>됩니다.</div>
+    <div class="mbti-grid">
+      <div class="mbti-item"><div class="mbti-label">에너지</div><div class="mbti-btns"><div class="mbti-btn">E</div><div class="mbti-btn on">I</div></div></div>
+      <div class="mbti-item"><div class="mbti-label">인식</div><div class="mbti-btns"><div class="mbti-btn on">S</div><div class="mbti-btn">N</div></div></div>
+      <div class="mbti-item"><div class="mbti-label">판단</div><div class="mbti-btns"><div class="mbti-btn on">T</div><div class="mbti-btn">F</div></div></div>
+      <div class="mbti-item"><div class="mbti-label">생활방식</div><div class="mbti-btns"><div class="mbti-btn on">J</div><div class="mbti-btn">P</div></div></div>
+    </div>
+    <div style="padding:14px;background:var(--gl);border-radius:12px;margin-bottom:16px;">
+      <div style="font-size:20px;font-weight:700;color:var(--gd);margin-bottom:5px;">ISTJ</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:8px;">꼼꼼하고 신뢰할 수 있는 중개사 스타일</div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;"><span class="tag tag-g">#꼼꼼한고객</span><span class="tag tag-g">#신중한결정</span><span class="tag tag-g">#체계적</span></div>
+    </div>
+    <button class="btn-gold" onclick="alert('MBTI가 저장됐어요!')">MBTI 저장하기</button>
+  </div>
+
+  <!-- 사주 탭 -->
+  <div id="prof-사주" class="section pb" style="display:none;">
+    <div style="padding:12px;background:var(--gl);border-radius:12px;margin-bottom:16px;font-size:13px;color:var(--gd);line-height:1.6;">사주를 등록하면 소비자와의 <strong>오행 궁합</strong>을 자동으로 분석해드려요.</div>
+    <div class="label">생년월일</div>
+    <div style="display:flex;gap:6px;margin-bottom:10px;"><div class="chip on">양력</div><div class="chip">음력</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
+      <div><div style="font-size:11px;color:var(--t2);margin-bottom:4px;">년도</div><input class="input" value="1980" style="text-align:center;"></div>
+      <div><div style="font-size:11px;color:var(--t2);margin-bottom:4px;">월</div><input class="input" value="05" style="text-align:center;"></div>
+      <div><div style="font-size:11px;color:var(--t2);margin-bottom:4px;">일</div><input class="input" value="09" style="text-align:center;"></div>
+    </div>
+    <div class="label">성별</div>
+    <div style="display:flex;gap:6px;margin-bottom:16px;"><div class="chip on">남성</div><div class="chip">여성</div></div>
+    <div style="padding:14px;background:var(--gl);border-radius:12px;margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;"><span style="color:var(--t2);">오행</span><span style="font-weight:600;color:var(--gd);">목(木) · 성장과 추진력</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--t2);">잘 맞는 고객</span><span style="font-weight:600;color:var(--gd);">신중하고 꼼꼼한 스타일</span></div>
+    </div>
+    <button class="btn-gold" onclick="alert('사주가 저장됐어요!')">사주 저장하기</button>
+  </div>
+
+  <!-- 사진 탭 -->
+  <div id="prof-사진" class="section pb" style="display:none;">
+    <div style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-size:13px;font-weight:600;">프로필 완성도</span><span style="font-size:13px;font-weight:700;color:var(--gold);">40%</span></div>
+      <div style="height:6px;background:var(--br);border-radius:3px;overflow:hidden;"><div style="height:100%;width:40%;background:var(--gold);border-radius:3px;"></div></div>
+      <div style="font-size:11px;color:var(--t3);margin-top:5px;">사진을 더 등록하면 AI 매칭에서 우선 노출돼요</div>
+    </div>
+    <div class="photo-grid">
+      <div class="photo-item filled"><span style="font-size:28px;">😊</span><span style="font-size:11px;color:var(--gd);font-weight:500;">프로필 ✓</span></div>
+      <div class="photo-item filled"><span style="font-size:28px;">🏢</span><span style="font-size:11px;color:var(--gd);font-weight:500;">외관 ✓</span></div>
+      <div class="photo-item empty" onclick="alert('내부 사진을 업로드하세요')"><i class="ti ti-plus" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">내부사진</span></div>
+      <div class="photo-item empty" onclick="alert('자격증 사진을 업로드하세요')"><i class="ti ti-certificate" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">자격증</span></div>
+      <div class="photo-item empty" onclick="alert('매물 사진을 업로드하세요')"><i class="ti ti-home" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">매물사진</span></div>
+    </div>
+  </div>
+
+  <!-- SNS 탭 -->
+  <div id="prof-SNS" class="section pb" style="display:none;">
+    <div class="label"><i class="ti ti-brand-youtube" style="color:#ff0000;font-size:14px;"></i> 유튜브</div>
+    <input class="input" placeholder="https://youtube.com/@..." style="margin-bottom:14px;">
+    <div class="label"><i class="ti ti-brand-instagram" style="color:#E1306C;font-size:14px;"></i> 인스타그램</div>
+    <input class="input" placeholder="https://instagram.com/..." style="margin-bottom:14px;">
+    <div class="label"><i class="ti ti-notebook" style="color:#03C75A;font-size:14px;"></i> 네이버 블로그</div>
+    <input class="input" placeholder="https://blog.naver.com/..." style="margin-bottom:14px;">
+    <div class="label"><i class="ti ti-brand-kakao" style="color:#F7E600;font-size:14px;"></i> 카카오 채널</div>
+    <input class="input" placeholder="카카오 채널 링크" style="margin-bottom:16px;">
+    <button class="btn-gold" onclick="alert('SNS 정보가 저장됐어요!')">SNS 저장하기</button>
+  </div>
+
+  <!-- 미리보기 탭 -->
+  <div id="prof-미리보기" style="display:none;padding-bottom:80px;">
+
+    <!-- 안내 배너 -->
+    <div style="margin:12px 16px;padding:11px 14px;background:var(--blb);border:.5px solid rgba(37,99,235,.2);border-radius:12px;display:flex;align-items:center;gap:8px;">
+      <i class="ti ti-eye" style="font-size:18px;color:var(--bl);flex-shrink:0;"></i>
+      <div style="font-size:12px;color:var(--bl);line-height:1.6;"><strong>소비자 눈에 보이는 내 프로필이에요.</strong><br>사진·설명·SNS를 채울수록 의뢰가 늘어요!</div>
+    </div>
+
+    <!-- 프로필 완성도 -->
+    <div style="margin:0 16px 14px;padding:13px 14px;background:var(--sf);border:.5px solid var(--br);border-radius:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:13px;font-weight:600;color:var(--tx);">프로필 완성도</span>
+        <span style="font-size:16px;font-weight:700;color:var(--gold);">40%</span>
+      </div>
+      <div style="height:7px;background:var(--br);border-radius:4px;overflow:hidden;margin-bottom:8px;">
+        <div style="height:100%;width:40%;background:linear-gradient(90deg,var(--gold),#FFD700);border-radius:4px;"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;"><i class="ti ti-check" style="color:var(--gn);font-size:13px;"></i><span style="color:var(--t2);">기본정보 등록</span></div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;"><i class="ti ti-check" style="color:var(--gn);font-size:13px;"></i><span style="color:var(--t2);">MBTI 등록 → AI 매칭 활성화</span></div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;"><i class="ti ti-x" style="color:var(--t3);font-size:13px;"></i><span style="color:var(--t3);">사주 미등록 → 사주 궁합 불가</span></div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;"><i class="ti ti-x" style="color:var(--t3);font-size:13px;"></i><span style="color:var(--t3);">사진 2장만 등록 (5장 권장)</span></div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;"><i class="ti ti-x" style="color:var(--t3);font-size:13px;"></i><span style="color:var(--t3);">SNS 미등록</span></div>
+      </div>
+    </div>
+
+    <!-- ★ 소비자에게 보이는 실제 프로필 미리보기 ★ -->
+    <div style="margin:0 16px;font-size:12px;font-weight:600;color:var(--t3);margin-bottom:8px;display:flex;align-items:center;gap:5px;"><i class="ti ti-device-mobile" style="font-size:14px;"></i>소비자 화면 미리보기</div>
+
+    <div style="margin:0 16px 80px;background:var(--sf);border:1.5px solid var(--br);border-radius:18px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.08);">
+
+      <!-- 사진 슬라이더 영역 -->
+      <div style="height:160px;background:var(--gl);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;border-bottom:.5px solid var(--br);position:relative;">
+        <i class="ti ti-camera" style="font-size:30px;color:var(--gd);"></i>
+        <div style="font-size:12px;color:var(--gd);">사무실 사진 1/2</div>
+        <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:5px;">
+          <div style="width:18px;height:3px;border-radius:2px;background:var(--gold);"></div>
+          <div style="width:6px;height:3px;border-radius:2px;background:rgba(232,160,32,.3);"></div>
+          <div style="width:6px;height:3px;border-radius:2px;background:rgba(232,160,32,.3);"></div>
+          <div style="width:6px;height:3px;border-radius:2px;background:rgba(232,160,32,.3);"></div>
+        </div>
+        <div style="position:absolute;top:10px;right:10px;background:var(--gold);color:#fff;font-size:10px;padding:3px 8px;border-radius:8px;font-weight:600;">홈즈톡 인증</div>
+      </div>
+
+      <!-- 사진 섬네일 -->
+      <div style="display:flex;gap:5px;padding:8px 12px;overflow-x:auto;border-bottom:.5px solid var(--br);">
+        <div style="width:54px;height:42px;border-radius:7px;background:var(--gl);border:1.5px solid var(--gold);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;">🏢</div>
+        <div style="width:54px;height:42px;border-radius:7px;background:rgba(0,0,0,.04);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;">😊</div>
+        <div style="width:54px;height:42px;border-radius:7px;background:rgba(0,0,0,.04);border:.5px dashed var(--br);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:.4;">+</div>
+        <div style="width:54px;height:42px;border-radius:7px;background:rgba(0,0,0,.04);border:.5px dashed var(--br);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:.4;">+</div>
+        <div style="width:54px;height:42px;border-radius:7px;background:rgba(0,0,0,.04);border:.5px dashed var(--br);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:.4;">+</div>
+      </div>
+
+      <!-- 이름 + 태그 -->
+      <div style="padding:14px 14px 10px;">
+        <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;">
+          <div style="width:48px;height:48px;border-radius:50%;background:var(--gl);border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:var(--gd);flex-shrink:0;">임제</div>
+          <div>
+            <div style="font-size:15px;font-weight:700;color:var(--tx);margin-bottom:3px;">임제성 공인중개사</div>
+            <div style="font-size:12px;color:var(--t2);margin-bottom:6px;">검단부동산 · 경력 12년 · <strong style="color:var(--gold);">AI 궁합 98%</strong></div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;">
+              <span style="padding:3px 8px;border-radius:8px;font-size:11px;background:var(--gl);color:var(--gd);">#홈즈톡인증</span>
+              <span style="padding:3px 8px;border-radius:8px;font-size:11px;background:rgba(0,0,0,.05);color:var(--t2);">#꼼꼼한설명</span>
+              <span style="padding:3px 8px;border-radius:8px;font-size:11px;background:rgba(0,0,0,.05);color:var(--t2);">#강요없음</span>
+              <span style="padding:3px 8px;border-radius:8px;font-size:11px;background:var(--gl);color:var(--gd);">ISTJ</span>
+            </div>
+          </div>
+        </div>
+        <!-- 소개글 -->
+        <div style="background:rgba(0,0,0,.04);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--t2);line-height:1.7;">검단신도시에서 12년째 활동 중입니다. 강요 없이 천천히 비교하실 수 있도록 도와드려요.</div>
+      </div>
+
+      <!-- MBTI + 사주 뱃지 -->
+      <div style="padding:0 14px 10px;display:flex;gap:6px;flex-wrap:wrap;">
+        <div style="padding:8px 12px;background:var(--pub);border:.5px solid var(--pu);border-radius:10px;display:flex;align-items:center;gap:6px;"><i class="ti ti-brain" style="font-size:14px;color:var(--pu);"></i><div><div style="font-size:11px;font-weight:600;color:var(--pu);">MBTI · ISTJ</div><div style="font-size:10px;color:var(--t3);">꼼꼼하고 신뢰있는 스타일</div></div></div>
+        <div style="padding:8px 12px;background:rgba(0,0,0,.04);border:.5px dashed var(--br);border-radius:10px;display:flex;align-items:center;gap:6px;opacity:.5;"><i class="ti ti-moon-stars" style="font-size:14px;color:var(--t3);"></i><div><div style="font-size:11px;font-weight:500;color:var(--t3);">사주 미등록</div><div style="font-size:10px;color:var(--t3);">등록 시 궁합 분석 가능</div></div></div>
+      </div>
+
+      <!-- SNS -->
+      <div style="padding:0 14px 10px;border-top:.5px solid var(--br);padding-top:10px;">
+        <div style="font-size:11px;font-weight:600;color:var(--t3);margin-bottom:7px;">SNS · 채널</div>
+        <div style="display:flex;gap:6px;">
+          <div style="padding:6px 12px;border:.5px dashed var(--br);border-radius:8px;font-size:12px;color:var(--t3);opacity:.5;display:flex;align-items:center;gap:4px;"><i class="ti ti-brand-youtube" style="color:#ff0000;opacity:.4;"></i>미등록</div>
+          <div style="padding:6px 12px;border:.5px dashed var(--br);border-radius:8px;font-size:12px;color:var(--t3);opacity:.5;display:flex;align-items:center;gap:4px;"><i class="ti ti-notebook" style="color:#03C75A;opacity:.4;"></i>미등록</div>
+        </div>
+      </div>
+
+      <!-- 위치 -->
+      <div style="padding:10px 14px;border-top:.5px solid var(--br);">
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2);margin-bottom:6px;"><i class="ti ti-map-pin" style="color:var(--gold);font-size:14px;"></i>인천 서구 원당대로840번길 5 (장원프라자)</div>
+        <div style="display:flex;gap:5px;"><span style="padding:3px 9px;border-radius:8px;font-size:11px;background:rgba(0,0,0,.05);color:var(--t2);">🚶 역 5분</span><span style="padding:3px 9px;border-radius:8px;font-size:11px;background:rgba(0,0,0,.05);color:var(--t2);">🅿️ 주차가능</span></div>
+      </div>
+
+      <!-- CTA 버튼 (소비자가 보는 것) -->
+      <div style="padding:12px 14px;display:flex;gap:8px;border-top:.5px solid var(--br);">
+        <div style="flex:1;padding:12px;border:.5px solid var(--br);border-radius:11px;font-size:13px;text-align:center;color:var(--t2);display:flex;align-items:center;justify-content:center;gap:5px;"><i class="ti ti-phone" style="font-size:14px;"></i>전화</div>
+        <div style="flex:2;padding:12px;background:var(--gold);border-radius:11px;font-size:13px;font-weight:700;color:#fff;text-align:center;cursor:pointer;">이 중개사에게 의뢰하기 →</div>
+      </div>
+
+      <!-- AI 궁합 보기 버튼 -->
+      <div style="padding:0 14px 14px;">
+        <div style="padding:11px;border:.5px solid var(--gold);border-radius:11px;font-size:13px;color:var(--gold);text-align:center;background:var(--gl);">AI 궁합 상세 보기 (98%) →</div>
+      </div>
+    </div>
+
+    <!-- 개선 제안 -->
+    <div style="margin:12px 16px 0;padding:14px;background:var(--orb);border:.5px solid var(--or);border-radius:14px;">
+      <div style="font-size:13px;font-weight:600;color:var(--or);margin-bottom:8px;">📈 프로필을 완성하면 더 많은 의뢰가 와요</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--t2);cursor:pointer;" onclick="showProfTab('사주');document.querySelectorAll('.ptab').forEach((t,i)=>{if(i===3)t.classList.add('on');else t.classList.remove('on')})"><div style="width:22px;height:22px;border-radius:50%;background:var(--or);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div><span>사주 등록하기 → 소비자에게 오행 궁합 분석 제공 <span style="color:var(--or);font-weight:600;">→</span></span></div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--t2);cursor:pointer;" onclick="showProfTab('사진');document.querySelectorAll('.ptab').forEach((t,i)=>{if(i===3)t.classList.add('on');else t.classList.remove('on')})"><div style="width:22px;height:22px;border-radius:50%;background:var(--or);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div><span>사진 3장 더 추가하기 → 신뢰도 상승 <span style="color:var(--or);font-weight:600;">→</span></span></div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--t2);cursor:pointer;" onclick="showProfTab('SNS');document.querySelectorAll('.ptab').forEach((t,i)=>{if(i===4)t.classList.add('on');else t.classList.remove('on')})"><div style="width:22px;height:22px;border-radius:50%;background:var(--or);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div><span>SNS 등록하기 → 블로그/유튜브 연결 <span style="color:var(--or);font-weight:600;">→</span></span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="nav">
+    <div class="ni" onclick="go('s-home')"><i class="ti ti-bell"></i><span>의뢰함</span></div>
+    <div class="ni" onclick="go('s-qr')"><i class="ti ti-qrcode"></i><span>내 QR</span></div>
+    <div class="ni" onclick="go('s-adup')"><i class="ti ti-speakerphone"></i><span>광고등록</span></div>
+    <div class="ni on"><i class="ti ti-user"></i><span>프로필</span></div>
+  </div>
+</div>
+
+<!-- PWA 배너 -->
+<div id="install-banner" style="display:none;position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:388px;background:var(--sf);border:1.5px solid var(--gold);border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:200;align-items:center;gap:12px;">
+  <div style="width:48px;height:48px;border-radius:12px;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🏠</div>
+  <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--tx);margin-bottom:2px;">홈즈톡 파트너 앱 설치</div><div style="font-size:11px;color:var(--t2);">홈 화면에 추가하면 앱처럼 사용!</div></div>
+  <button onclick="installPWA()" style="padding:8px 14px;background:var(--gold);border:none;border-radius:9px;font-size:12px;font-weight:700;color:#fff;cursor:pointer;">설치</button>
+  <button onclick="document.getElementById('install-banner').style.display='none'" style="padding:8px;background:none;border:none;cursor:pointer;color:var(--t3);font-size:18px;">✕</button>
+</div>
+
+<script>
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  const el=document.getElementById(id);
+  if(el){el.classList.add('on');window.scrollTo(0,0);}
+}
+
+function showProfTab(tab){
+  document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('on'));
+  event.currentTarget.classList.add('on');
+  ['기본','MBTI','사주','사진','SNS','미리보기'].forEach(t=>{
+    const el=document.getElementById('prof-'+t);
+    if(el) el.style.display = t===tab ? 'block' : 'none';
+  });
+}
+
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();
+  deferredPrompt=e;
+  if(!window.matchMedia('(display-mode: standalone)').matches){
+    document.getElementById('install-banner').style.display='flex';
+  }
+});
+function installPWA(){
+  document.getElementById('install-banner').style.display='none';
+  if(deferredPrompt){deferredPrompt.prompt();deferredPrompt=null;}
+}
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
