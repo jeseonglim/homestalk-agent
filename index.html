@@ -193,71 +193,17 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
 
   <!-- 탭 -->
   <div class="tabs">
-    <div class="tab on">새 의뢰 <span style="background:var(--gold);color:#fff;font-size:10px;padding:1px 6px;border-radius:8px;margin-left:3px;">3</span></div>
-    <div class="tab">QR접수 <span style="background:var(--pu);color:#fff;font-size:10px;padding:1px 6px;border-radius:8px;margin-left:3px;">2</span></div>
-    <div class="tab">진행중</div>
-    <div class="tab">완료</div>
+    <div class="tab on" id="req-tab-0" onclick="switchReqTab(0)">새 의뢰 <span id="req-badge-0" style="background:var(--gold);color:#fff;font-size:10px;padding:1px 6px;border-radius:8px;margin-left:3px;">0</span></div>
+    <div class="tab" id="req-tab-1" onclick="switchReqTab(1)">QR접수 <span id="req-badge-1" style="background:var(--pu);color:#fff;font-size:10px;padding:1px 6px;border-radius:8px;margin-left:3px;">0</span></div>
+    <div class="tab" id="req-tab-2" onclick="switchReqTab(2)">진행중</div>
+    <div class="tab" id="req-tab-3" onclick="switchReqTab(3)">완료</div>
   </div>
 
-  <!-- 의뢰 카드 1 -->
-  <div class="req-card gold" style="margin-top:10px;">
-    <div class="req-hdr">
-      <div style="display:flex;align-items:center;gap:6px;"><span class="tag tag-wh" style="font-size:10px;">새 의뢰</span></div>
-      <span style="font-size:11px;color:var(--t3);">방금 전</span>
-    </div>
-    <div class="req-body">
-      <div style="font-size:15px;font-weight:700;margin-bottom:6px;">검단푸르지오 33평</div>
-      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">
-        <span class="tag tag-g">매매</span>
-        <span class="tag tag-gy">아파트</span>
-        <span class="tag tag-gy">3억 5천</span>
-        <span class="tag tag-gy">3개월 이내</span>
-      </div>
-      <div style="padding:8px 10px;background:rgba(0,0,0,.04);border-radius:8px;font-size:12px;color:var(--t2);margin-bottom:10px;">😷 마스크 착용 부탁드려요</div>
-      <div style="padding:8px 10px;background:var(--gl);border-radius:8px;font-size:12px;color:var(--gd);margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="ti ti-sparkles" style="font-size:13px;"></i>AI 궁합 98% · INFP 소비자</div>
-      <div class="act-btns">
-        <div class="act-btn outline"><i class="ti ti-phone" style="font-size:13px;"></i> 전화</div>
-        <div class="act-btn gold" onclick="alert('수락 완료! 소비자에게 알림이 전송됐어요.')">수락하고 연락</div>
-        <div class="act-btn outline" onclick="go('s-adup')">광고등록</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 의뢰 카드 2 -->
-  <div class="req-card gold">
-    <div class="req-hdr">
-      <div style="display:flex;align-items:center;gap:6px;"><span class="tag tag-wh" style="font-size:10px;">새 의뢰</span></div>
-      <span style="font-size:11px;color:var(--t3);">15분 전</span>
-    </div>
-    <div class="req-body">
-      <div style="font-size:15px;font-weight:700;margin-bottom:6px;">검단 한신더휴 25평</div>
-      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">
-        <span class="tag tag-g">전세</span>
-        <span class="tag tag-gy">아파트</span>
-        <span class="tag tag-gy">2억 2천</span>
-      </div>
-      <div class="act-btns">
-        <div class="act-btn outline"><i class="ti ti-phone" style="font-size:13px;"></i> 전화</div>
-        <div class="act-btn gold" onclick="alert('수락 완료!')">수락하고 연락</div>
-        <div class="act-btn outline" onclick="go('s-adup')">광고등록</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- QR 의뢰 카드 -->
-  <div class="req-card pu">
-    <div class="req-hdr">
-      <div style="display:flex;align-items:center;gap:6px;"><span class="tag tag-pu" style="font-size:10px;"><i class="ti ti-qrcode" style="font-size:10px;"></i> QR접수</span></div>
-      <span style="font-size:11px;color:var(--t3);">32분 전</span>
-    </div>
-    <div class="req-body">
-      <div style="font-size:15px;font-weight:700;margin-bottom:6px;">아파트 · 매매</div>
-      <div style="font-size:12px;color:var(--t2);margin-bottom:10px;">사무실 방문 고객이 QR코드로 직접 접수했어요</div>
-      <div class="act-btns">
-        <div class="act-btn outline"><i class="ti ti-phone" style="font-size:13px;"></i> 전화</div>
-        <div class="act-btn pu" onclick="alert('확인 연락 완료!')">접수 확인 연락</div>
-      </div>
-    </div>
+  <!-- 의뢰 목록 (DB 실시간 연동) -->
+  <div id="req-list" style="margin-top:10px;"></div>
+  <div id="req-empty" style="display:none;padding:60px 24px;text-align:center;">
+    <div style="font-size:32px;margin-bottom:10px;">📭</div>
+    <div style="font-size:13px;color:var(--t3);">표시할 의뢰가 없어요</div>
   </div>
 
   <div style="height:80px;"></div>
@@ -674,6 +620,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
 <script>
 var sb=window.supabase.createClient('https://owzbwgihypvzfogycskh.supabase.co','sb_publishable_Azn9cbYHhUROjWoRU4mwZA_x7UhNnYN');
 
+var currentSession=null; // 로그인한 중개사 세션
+
 // 카카오 콜백 감지
 var isCallback = window.location.search.includes('code=') || window.location.hash.includes('access_token');
 if(isCallback){
@@ -695,6 +643,7 @@ function go(id){
       if(oc.indexOf(id)>-1) ni.classList.add('on');
     });
   });
+  if(id==='s-home') loadInquiries();
 }
 
 function switchTab(t){
@@ -722,6 +671,7 @@ async function doLogin(){
   if(!p){showMsg('비밀번호를 입력해주세요.',1);return;}
   var r=await sb.auth.signInWithPassword({email:e,password:p});
   if(r.error){showMsg(r.error.message.includes('Invalid')?'이메일 또는 비밀번호가 틀렸어요.':r.error.message,1);return;}
+  currentSession=r.data.session;
   go('s-home');
 }
 
@@ -748,6 +698,7 @@ sb.auth.onAuthStateChange(function(event, session){
   
   if(session){
     handled = true;
+    currentSession = session;
     // URL 정리
     if(window.location.search || window.location.hash.includes('access_token')){
       window.history.replaceState(null,'','/');
@@ -755,6 +706,7 @@ sb.auth.onAuthStateChange(function(event, session){
     go('s-home');
   } else if(event==='INITIAL_SESSION' && !session && !isCallback){
     // 콜백이 아닌데 세션 없음 = 로그인 안 된 상태
+    currentSession = null;
     go('s-login');
   }
 });
@@ -765,6 +717,131 @@ if(isCallback){
     if(!handled) window.location.href='/';
   },10000);
 }
+
+// ══ 의뢰함 (DB 실시간 연동) ══
+// 탭: 0=새 의뢰(app,대기중,미배정) 1=QR접수(qr,대기중,미배정) 2=진행중(내가 수락) 3=완료(내가 완료)
+var currentReqTab = 0;
+
+function escapeHtml(s){
+  return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+function timeAgo(iso){
+  var min = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+  if(min < 1) return '방금 전';
+  if(min < 60) return min + '분 전';
+  var hr = Math.floor(min / 60);
+  if(hr < 24) return hr + '시간 전';
+  return Math.floor(hr / 24) + '일 전';
+}
+
+function reqCardHtml(item, tabIdx){
+  var isQr = item.source === 'qr';
+  var cardClass = isQr ? 'pu' : 'gold';
+  var badge = isQr
+    ? '<span class="tag tag-pu" style="font-size:10px;"><i class="ti ti-qrcode" style="font-size:10px;"></i> QR접수</span>'
+    : '<span class="tag tag-wh" style="font-size:10px;">새 의뢰</span>';
+  var title = escapeHtml(item.address) + (item.detail_address ? ' ' + escapeHtml(item.detail_address) : '');
+  var tags = '<span class="tag tag-g">' + escapeHtml(item.inquiry_type) + '</span>'
+    + '<span class="tag tag-gy">' + escapeHtml(item.property_type) + '</span>'
+    + (item.price ? '<span class="tag tag-gy">' + escapeHtml(item.price) + '</span>' : '');
+  var msgHtml = item.message
+    ? '<div style="padding:8px 10px;background:rgba(0,0,0,.04);border-radius:8px;font-size:12px;color:var(--t2);margin-bottom:10px;">' + escapeHtml(item.message) + '</div>'
+    : '';
+  var phoneBtn = item.phone
+    ? '<a class="act-btn outline" href="tel:' + escapeHtml(item.phone) + '" style="text-decoration:none;"><i class="ti ti-phone" style="font-size:13px;"></i> 전화</a>'
+    : '<div class="act-btn outline" style="opacity:.4;"><i class="ti ti-phone" style="font-size:13px;"></i> 전화</div>';
+
+  var actions;
+  if(tabIdx === 0 || tabIdx === 1){
+    actions = phoneBtn + '<div class="act-btn ' + (isQr ? 'pu' : 'gold') + '" onclick="acceptInquiry(' + item.id + ')">' + (isQr ? '접수 확인 연락' : '수락하고 연락') + '</div>';
+  } else if(tabIdx === 2){
+    actions = phoneBtn
+      + '<div class="act-btn gold" onclick="completeInquiry(' + item.id + ')">거래 완료 처리</div>'
+      + '<div class="act-btn outline" onclick="go(\'s-adup\')">광고등록</div>';
+  } else {
+    actions = phoneBtn + '<div class="act-btn outline" onclick="go(\'s-adup\')">광고등록</div>';
+  }
+
+  return '<div class="req-card ' + cardClass + '">'
+    + '<div class="req-hdr"><div style="display:flex;align-items:center;gap:6px;">' + badge + '</div><span style="font-size:11px;color:var(--t3);">' + timeAgo(item.created_at) + '</span></div>'
+    + '<div class="req-body">'
+    + '<div style="font-size:15px;font-weight:700;margin-bottom:6px;">' + title + '</div>'
+    + '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">' + tags + '</div>'
+    + msgHtml
+    + '<div class="act-btns">' + actions + '</div>'
+    + '</div></div>';
+}
+
+function switchReqTab(idx){
+  currentReqTab = idx;
+  [0,1,2,3].forEach(function(i){
+    var t = document.getElementById('req-tab-' + i);
+    if(t) t.classList.toggle('on', i === idx);
+  });
+  loadInquiries();
+}
+
+async function loadInquiries(){
+  if(!currentSession) return;
+  var list = document.getElementById('req-list');
+  var empty = document.getElementById('req-empty');
+  if(!list || !empty) return; // s-home이 아직 DOM에 없으면 skip
+
+  var uid = currentSession.user.id;
+  var q = sb.from('inquiries').select('*').order('created_at', {ascending:false});
+  if(currentReqTab === 0) q = q.eq('status','대기중').eq('source','app').is('agent_id', null);
+  else if(currentReqTab === 1) q = q.eq('status','대기중').eq('source','qr').is('agent_id', null);
+  else if(currentReqTab === 2) q = q.eq('agent_id', uid).eq('status','진행중');
+  else q = q.eq('agent_id', uid).eq('status','완료');
+
+  var result = await q;
+  var rows = (result.data || []);
+  if(result.error || rows.length === 0){
+    list.innerHTML = '';
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    list.innerHTML = rows.map(function(item){ return reqCardHtml(item, currentReqTab); }).join('');
+  }
+  updateReqBadges();
+}
+
+async function updateReqBadges(){
+  var r0 = await sb.from('inquiries').select('id',{count:'exact',head:true}).eq('status','대기중').eq('source','app').is('agent_id', null);
+  var r1 = await sb.from('inquiries').select('id',{count:'exact',head:true}).eq('status','대기중').eq('source','qr').is('agent_id', null);
+  var b0 = document.getElementById('req-badge-0'), b1 = document.getElementById('req-badge-1');
+  if(b0) b0.textContent = r0.count != null ? r0.count : 0;
+  if(b1) b1.textContent = r1.count != null ? r1.count : 0;
+}
+
+// 수락하고 연락: 미배정 의뢰를 내 것으로 배정 + 진행중으로 전환
+async function acceptInquiry(id){
+  if(!currentSession) return;
+  var r = await sb.from('inquiries').update({agent_id: currentSession.user.id, status:'진행중'}).eq('id', id).is('agent_id', null);
+  if(r.error){ alert('수락 처리에 실패했어요: ' + r.error.message); return; }
+  alert('수락 완료! 소비자에게 알림이 전송됐어요.');
+  loadInquiries();
+}
+
+// 거래 완료 처리 (내가 진행중으로 담당하고 있는 의뢰만)
+async function completeInquiry(id){
+  if(!currentSession) return;
+  var r = await sb.from('inquiries').update({status:'완료'}).eq('id', id).eq('agent_id', currentSession.user.id);
+  if(r.error){ alert('처리에 실패했어요: ' + r.error.message); return; }
+  loadInquiries();
+}
+
+// inquiries 테이블 변경을 실시간으로 감지해서 의뢰함 자동 새로고침
+// (Supabase 대시보드에서 inquiries 테이블 Realtime 복제가 켜져 있어야 동작해요)
+sb.channel('inquiries-realtime')
+  .on('postgres_changes', {event:'*', schema:'public', table:'inquiries'}, function(){
+    var home = document.getElementById('s-home');
+    if(home && home.classList.contains('on')) loadInquiries();
+  })
+  .subscribe();
 
 function showProfTab(tab){
   document.querySelectorAll('.ptab').forEach(function(t){t.classList.remove('on');});
