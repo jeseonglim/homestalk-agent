@@ -782,6 +782,14 @@ function switchReqTab(idx){
   loadInquiries();
 }
 
+// 처리가 끝난(내가 이미 잡은) 상태인지. 이 두 값만 앱이 직접 기록하므로 신뢰할 수 있어요.
+function isClosedStatus(s){ return s === '진행중' || s === '완료'; }
+
+// 새 의뢰/QR 탭은 status를 쿼리 조건에서 빼고 JS에서 판정해요.
+// status 기본값이 '대기중'이 아니거나 비어 있어도 접수 건이 사라지지 않게 하기 위함입니다.
+function matchesNewTab(r){ return r.source !== 'qr' && !isClosedStatus(r.status); }
+function matchesQrTab(r){ return !isClosedStatus(r.status); }
+
 async function loadInquiries(){
   if(!currentSession) return;
   var list = document.getElementById('req-list');
@@ -790,17 +798,33 @@ async function loadInquiries(){
 
   var uid = currentSession.user.id;
   var q = sb.from('inquiries').select('*').order('created_at', {ascending:false});
-  if(currentReqTab === 0) q = q.eq('status','대기중').eq('source','app').is('agent_id', null);
-  // QR 접수는 소비자앱에서 이미 나에게 배정된 상태로 들어와요
-  else if(currentReqTab === 1) q = q.eq('status','대기중').eq('source','qr').eq('agent_id', uid);
+  if(currentReqTab === 0) q = q.is('agent_id', null);                        // 새 의뢰: 아직 배정 안 된 건
+  else if(currentReqTab === 1) q = q.eq('agent_id', uid).eq('source','qr');  // QR: 나에게 배정된 QR 접수
   else if(currentReqTab === 2) q = q.eq('agent_id', uid).eq('status','진행중');
   else q = q.eq('agent_id', uid).eq('status','완료');
 
   var result = await q;
-  var rows = (result.data || []);
-  if(result.error || rows.length === 0){
+
+  // 조회 자체가 실패하면(주로 RLS 권한) "의뢰 없음"이 아니라 오류를 그대로 보여줘요
+  if(result.error){
     list.innerHTML = '';
     empty.style.display = 'block';
+    empty.innerHTML = '<div style="font-size:32px;margin-bottom:10px;">⚠️</div>'
+      + '<div style="font-size:13px;color:var(--rd);line-height:1.7;">의뢰를 불러오지 못했어요</div>'
+      + '<div style="font-size:11px;color:var(--t3);margin-top:6px;">' + escapeHtml(result.error.message) + '</div>';
+    updateReqBadges();
+    return;
+  }
+
+  var rows = result.data || [];
+  if(currentReqTab === 0) rows = rows.filter(matchesNewTab);
+  else if(currentReqTab === 1) rows = rows.filter(matchesQrTab);
+
+  if(rows.length === 0){
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    empty.innerHTML = '<div style="font-size:32px;margin-bottom:10px;">📭</div>'
+      + '<div style="font-size:13px;color:var(--t3);">표시할 의뢰가 없어요</div>';
   } else {
     empty.style.display = 'none';
     list.innerHTML = rows.map(function(item){ return reqCardHtml(item, currentReqTab); }).join('');
@@ -808,15 +832,20 @@ async function loadInquiries(){
   updateReqBadges();
 }
 
+// 뱃지도 목록과 같은 기준으로 세요 (status는 JS에서 판정)
 async function updateReqBadges(){
   var uid = currentSession ? currentSession.user.id : null;
-  var r0 = await sb.from('inquiries').select('id',{count:'exact',head:true}).eq('status','대기중').eq('source','app').is('agent_id', null);
-  var r1 = uid
-    ? await sb.from('inquiries').select('id',{count:'exact',head:true}).eq('status','대기중').eq('source','qr').eq('agent_id', uid)
-    : { count: 0 };
   var b0 = document.getElementById('req-badge-0'), b1 = document.getElementById('req-badge-1');
-  if(b0) b0.textContent = r0.count != null ? r0.count : 0;
-  if(b1) b1.textContent = r1.count != null ? r1.count : 0;
+
+  var r0 = await sb.from('inquiries').select('status,source').is('agent_id', null);
+  if(b0) b0.textContent = (r0.data || []).filter(matchesNewTab).length;
+
+  var n1 = 0;
+  if(uid){
+    var r1 = await sb.from('inquiries').select('status').eq('agent_id', uid).eq('source','qr');
+    n1 = (r1.data || []).filter(matchesQrTab).length;
+  }
+  if(b1) b1.textContent = n1;
 }
 
 // 수락하고 연락: 미배정 의뢰를 내 것으로 배정 + 진행중으로 전환
