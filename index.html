@@ -47,6 +47,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
 .chip.on{background:var(--gl);border-color:var(--gold);color:var(--gd);font-weight:500;}
 .input{width:100%;padding:13px 14px;border:1.5px solid var(--br);border-radius:12px;font-size:14px;color:var(--tx);background:var(--sf);font-family:inherit;}
 .input:focus{outline:none;border-color:var(--gold);}
+.input[readonly]{background:rgba(0,0,0,.04);color:var(--t2);}
+.input[readonly]:focus{border-color:var(--br);}
+.ro-note{font-size:11px;color:var(--t3);margin:-8px 0 12px;}
+#toast{display:none;position:fixed;bottom:96px;left:50%;transform:translateX(-50%);max-width:360px;width:calc(100% - 48px);padding:12px 16px;border-radius:12px;font-size:13px;font-weight:500;text-align:center;z-index:300;box-shadow:0 6px 20px rgba(0,0,0,.15);}
 .section{padding:16px;}
 .label{font-size:12px;font-weight:600;color:var(--t2);margin-bottom:8px;display:block;}
 .card{background:var(--sf);border:.5px solid var(--br);border-radius:16px;padding:16px;margin-bottom:10px;}
@@ -175,10 +179,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
 
   <!-- 중개사 정보 바 -->
   <div style="padding:12px 16px;background:var(--gl);border-bottom:.5px solid rgba(232,160,32,.3);display:flex;align-items:center;gap:10px;">
-    <div class="av">임제</div>
+    <div class="av" id="home-av"><i class="ti ti-user" style="font-size:20px;"></i></div>
     <div style="flex:1;">
-      <div style="font-size:14px;font-weight:600;color:var(--tx);">임제성 공인중개사</div>
-      <div style="font-size:11px;color:var(--gd);display:flex;align-items:center;gap:4px;margin-top:2px;"><i class="ti ti-circle-check" style="font-size:12px;"></i>홈즈톡 인증 회원</div>
+      <div style="font-size:14px;font-weight:600;color:var(--tx);" id="home-name">중개사님</div>
+      <div style="font-size:11px;color:var(--gd);display:flex;align-items:center;gap:4px;margin-top:2px;" id="home-cert"><i class="ti ti-circle-check" style="font-size:12px;"></i>홈즈톡 인증 회원</div>
     </div>
     <div style="font-size:11px;padding:3px 10px;background:var(--gold);color:#fff;border-radius:20px;font-weight:600;">NEW 3</div>
   </div>
@@ -375,16 +379,19 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
   <div class="hdr">
     <span class="back" onclick="go('s-home')"><i class="ti ti-arrow-left"></i></span>
     <div class="logo">내 프로필</div>
-    <span style="font-size:14px;color:var(--gold);cursor:pointer;font-weight:500;" onclick="alert('프로필이 저장됐어요!')">저장</span>
+    <span id="prof-save-btn" style="font-size:14px;color:var(--gold);cursor:pointer;font-weight:500;" onclick="saveAgentProfile()">저장</span>
   </div>
+
+  <!-- 프로필 불러오기 상태 -->
+  <div id="prof-status" style="display:none;margin:12px 16px;padding:11px 14px;border-radius:12px;font-size:12px;line-height:1.6;"></div>
 
   <!-- 프로필 카드 -->
   <div style="margin:12px 16px;padding:14px;background:var(--gl);border:1.5px solid var(--gold);border-radius:16px;display:flex;align-items:center;gap:12px;">
-    <div class="av" style="width:52px;height:52px;font-size:16px;">임제</div>
+    <div class="av" id="prof-av" style="width:52px;height:52px;font-size:16px;"><i class="ti ti-user" style="font-size:24px;"></i></div>
     <div style="flex:1;">
-      <div style="font-size:16px;font-weight:700;color:var(--tx);">임제성 공인중개사</div>
-      <div style="font-size:12px;color:var(--t2);margin-top:3px;">검단부동산 · 경력 12년</div>
-      <div style="display:inline-block;font-size:10px;padding:2px 9px;background:var(--gold);color:#fff;border-radius:8px;margin-top:5px;">홈즈톡 인증</div>
+      <div style="font-size:16px;font-weight:700;color:var(--tx);" id="prof-card-name">중개사님</div>
+      <div style="font-size:12px;color:var(--t2);margin-top:3px;" id="prof-card-sub">프로필을 불러오는 중...</div>
+      <div id="prof-card-cert" style="display:none;font-size:10px;padding:2px 9px;background:var(--gold);color:#fff;border-radius:8px;margin-top:5px;">홈즈톡 인증</div>
     </div>
     <div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:var(--gd);">ISTJ</div><div style="font-size:10px;color:var(--gd);">MBTI</div></div>
   </div>
@@ -402,17 +409,21 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
   <!-- 기본정보 탭 -->
   <div id="prof-기본" class="section pb">
     <div class="label">사무실 이름</div>
-    <input class="input" value="검단부동산" style="margin-bottom:12px;">
-    <div class="label">대표자명</div>
-    <input class="input" value="임제성" style="margin-bottom:12px;">
-    <div class="label">전화번호</div>
-    <input class="input" value="032-123-4567" style="margin-bottom:12px;">
+    <input class="input" id="p-office" readonly placeholder="-" style="margin-bottom:4px;">
+    <div class="ro-note">사무소명·주소·등록번호는 수정할 수 없어요.</div>
+    <div class="label">등록번호</div>
+    <input class="input" id="p-reg" readonly placeholder="-" style="margin-bottom:12px;">
     <div class="label">주소</div>
-    <input class="input" value="인천 서구 원당대로840번길 5" style="margin-bottom:12px;">
+    <input class="input" id="p-address" readonly placeholder="-" style="margin-bottom:12px;">
+    <div class="label">전화번호</div>
+    <input class="input" id="p-phone" type="tel" oninput="renderPreview()" placeholder="예: 032-123-4567" style="margin-bottom:12px;">
+    <div class="label">경력 (년)</div>
+    <input class="input" id="p-career" type="number" min="0" max="70" oninput="renderPreview()" placeholder="예: 12" style="margin-bottom:12px;">
     <div class="label">한 줄 소개</div>
-    <textarea class="input" rows="3" style="resize:none;">검단신도시에서 12년째 활동 중입니다. 강요 없이 천천히 비교하실 수 있도록 도와드려요.</textarea>
-    <div style="margin-top:12px;"><div class="label">전문 분야</div><div style="display:flex;gap:6px;flex-wrap:wrap;"><div class="chip on">아파트</div><div class="chip on">매매</div><div class="chip">전월세</div><div class="chip">빌라</div></div></div>
-    <div style="margin-top:12px;"><div class="label">스타일 태그</div><div style="display:flex;gap:6px;flex-wrap:wrap;"><div class="chip on">#꼼꼼한설명</div><div class="chip on">#강요없음</div><div class="chip">#빠른처리</div><div class="chip">#친절</div></div></div>
+    <textarea class="input" id="p-intro" rows="3" oninput="renderPreview()" placeholder="소비자에게 보여줄 소개글을 적어주세요." style="resize:none;"></textarea>
+    <div style="margin-top:12px;"><div class="label">전문 분야</div><div id="p-spec-chips" style="display:flex;gap:6px;flex-wrap:wrap;"></div></div>
+    <div style="margin-top:16px;"><button class="btn-gold" onclick="saveAgentProfile()">프로필 저장하기</button></div>
+    <div style="margin-top:12px;"><div class="label">스타일 태그</div><div style="display:flex;gap:6px;flex-wrap:wrap;"><div class="chip on">#꼼꼼한설명</div><div class="chip on">#강요없음</div><div class="chip">#빠른처리</div><div class="chip">#친절</div></div><div class="ro-note" style="margin-top:8px;">스타일 태그는 아직 저장되지 않아요 (준비 중).</div></div>
   </div>
 
   <!-- MBTI 탭 -->
@@ -459,8 +470,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
       <div style="font-size:11px;color:var(--t3);margin-top:5px;">사진을 더 등록하면 AI 매칭에서 우선 노출돼요</div>
     </div>
     <div class="photo-grid">
-      <div class="photo-item filled"><span style="font-size:28px;">😊</span><span style="font-size:11px;color:var(--gd);font-weight:500;">프로필 ✓</span></div>
-      <div class="photo-item filled"><span style="font-size:28px;">🏢</span><span style="font-size:11px;color:var(--gd);font-weight:500;">외관 ✓</span></div>
+      <div class="photo-item filled" onclick="showToast('프로필 사진 업로드는 준비 중이에요. 지금은 기본 아이콘으로 보여요.',0)"><i class="ti ti-user-circle" style="font-size:30px;color:var(--gd);"></i><span style="font-size:11px;color:var(--gd);font-weight:500;">프로필 (기본)</span></div>
+      <div class="photo-item empty" onclick="showToast('사무실 외관 사진 업로드는 준비 중이에요.',0)"><i class="ti ti-building-store" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">외관사진</span></div>
       <div class="photo-item empty" onclick="alert('내부 사진을 업로드하세요')"><i class="ti ti-plus" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">내부사진</span></div>
       <div class="photo-item empty" onclick="alert('자격증 사진을 업로드하세요')"><i class="ti ti-certificate" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">자격증</span></div>
       <div class="photo-item empty" onclick="alert('매물 사진을 업로드하세요')"><i class="ti ti-home" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">매물사진</span></div>
@@ -493,18 +504,12 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
     <div style="margin:0 16px 14px;padding:13px 14px;background:var(--sf);border:.5px solid var(--br);border-radius:14px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
         <span style="font-size:13px;font-weight:600;color:var(--tx);">프로필 완성도</span>
-        <span style="font-size:16px;font-weight:700;color:var(--gold);">40%</span>
+        <span style="font-size:16px;font-weight:700;color:var(--gold);" id="pv-pct">0%</span>
       </div>
       <div style="height:7px;background:var(--br);border-radius:4px;overflow:hidden;margin-bottom:8px;">
-        <div style="height:100%;width:40%;background:linear-gradient(90deg,var(--gold),#FFD700);border-radius:4px;"></div>
+        <div style="height:100%;width:0%;background:linear-gradient(90deg,var(--gold),#FFD700);border-radius:4px;" id="pv-bar"></div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:5px;">
-        <div style="display:flex;align-items:center;gap:7px;font-size:12px;"><i class="ti ti-check" style="color:var(--gn);font-size:13px;"></i><span style="color:var(--t2);">기본정보 등록</span></div>
-        <div style="display:flex;align-items:center;gap:7px;font-size:12px;"><i class="ti ti-check" style="color:var(--gn);font-size:13px;"></i><span style="color:var(--t2);">MBTI 등록 → AI 매칭 활성화</span></div>
-        <div style="display:flex;align-items:center;gap:7px;font-size:12px;"><i class="ti ti-x" style="color:var(--t3);font-size:13px;"></i><span style="color:var(--t3);">사주 미등록 → 사주 궁합 불가</span></div>
-        <div style="display:flex;align-items:center;gap:7px;font-size:12px;"><i class="ti ti-x" style="color:var(--t3);font-size:13px;"></i><span style="color:var(--t3);">사진 2장만 등록 (5장 권장)</span></div>
-        <div style="display:flex;align-items:center;gap:7px;font-size:12px;"><i class="ti ti-x" style="color:var(--t3);font-size:13px;"></i><span style="color:var(--t3);">SNS 미등록</span></div>
-      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;" id="pv-check"></div>
     </div>
 
     <!-- ★ 소비자에게 보이는 실제 프로필 미리보기 ★ -->
@@ -522,7 +527,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
           <div style="width:6px;height:3px;border-radius:2px;background:rgba(232,160,32,.3);"></div>
           <div style="width:6px;height:3px;border-radius:2px;background:rgba(232,160,32,.3);"></div>
         </div>
-        <div style="position:absolute;top:10px;right:10px;background:var(--gold);color:#fff;font-size:10px;padding:3px 8px;border-radius:8px;font-weight:600;">홈즈톡 인증</div>
+        <div id="pv-cert" style="display:none;position:absolute;top:10px;right:10px;background:var(--gold);color:#fff;font-size:10px;padding:3px 8px;border-radius:8px;font-weight:600;">홈즈톡 인증</div>
       </div>
 
       <!-- 사진 섬네일 -->
@@ -537,20 +542,15 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
       <!-- 이름 + 태그 -->
       <div style="padding:14px 14px 10px;">
         <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;">
-          <div style="width:48px;height:48px;border-radius:50%;background:var(--gl);border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:var(--gd);flex-shrink:0;">임제</div>
+          <div id="pv-av" style="width:48px;height:48px;border-radius:50%;background:var(--gl);border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:var(--gd);flex-shrink:0;"><i class="ti ti-user" style="font-size:22px;"></i></div>
           <div>
-            <div style="font-size:15px;font-weight:700;color:var(--tx);margin-bottom:3px;">임제성 공인중개사</div>
-            <div style="font-size:12px;color:var(--t2);margin-bottom:6px;">검단부동산 · 경력 12년 · <strong style="color:var(--gold);">AI 궁합 98%</strong></div>
-            <div style="display:flex;gap:4px;flex-wrap:wrap;">
-              <span style="padding:3px 8px;border-radius:8px;font-size:11px;background:var(--gl);color:var(--gd);">#홈즈톡인증</span>
-              <span style="padding:3px 8px;border-radius:8px;font-size:11px;background:rgba(0,0,0,.05);color:var(--t2);">#꼼꼼한설명</span>
-              <span style="padding:3px 8px;border-radius:8px;font-size:11px;background:rgba(0,0,0,.05);color:var(--t2);">#강요없음</span>
-              <span style="padding:3px 8px;border-radius:8px;font-size:11px;background:var(--gl);color:var(--gd);">ISTJ</span>
-            </div>
+            <div style="font-size:15px;font-weight:700;color:var(--tx);margin-bottom:3px;" id="pv-name">중개사님</div>
+            <div style="font-size:12px;color:var(--t2);margin-bottom:6px;" id="pv-sub">-</div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;" id="pv-tags"></div>
           </div>
         </div>
         <!-- 소개글 -->
-        <div style="background:rgba(0,0,0,.04);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--t2);line-height:1.7;">검단신도시에서 12년째 활동 중입니다. 강요 없이 천천히 비교하실 수 있도록 도와드려요.</div>
+        <div style="background:rgba(0,0,0,.04);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--t2);line-height:1.7;" id="pv-intro">소개글이 아직 없어요.</div>
       </div>
 
       <!-- MBTI + 사주 뱃지 -->
@@ -570,13 +570,13 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
 
       <!-- 위치 -->
       <div style="padding:10px 14px;border-top:.5px solid var(--br);">
-        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2);margin-bottom:6px;"><i class="ti ti-map-pin" style="color:var(--gold);font-size:14px;"></i>인천 서구 원당대로840번길 5 (장원프라자)</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2);margin-bottom:6px;"><i class="ti ti-map-pin" style="color:var(--gold);font-size:14px;"></i><span id="pv-address">-</span></div>
         <div style="display:flex;gap:5px;"><span style="padding:3px 9px;border-radius:8px;font-size:11px;background:rgba(0,0,0,.05);color:var(--t2);">🚶 역 5분</span><span style="padding:3px 9px;border-radius:8px;font-size:11px;background:rgba(0,0,0,.05);color:var(--t2);">🅿️ 주차가능</span></div>
       </div>
 
       <!-- CTA 버튼 (소비자가 보는 것) -->
       <div style="padding:12px 14px;display:flex;gap:8px;border-top:.5px solid var(--br);">
-        <div style="flex:1;padding:12px;border:.5px solid var(--br);border-radius:11px;font-size:13px;text-align:center;color:var(--t2);display:flex;align-items:center;justify-content:center;gap:5px;"><i class="ti ti-phone" style="font-size:14px;"></i>전화</div>
+        <div style="flex:1;padding:12px;border:.5px solid var(--br);border-radius:11px;font-size:13px;text-align:center;color:var(--t2);display:flex;align-items:center;justify-content:center;gap:5px;" id="pv-phone"><i class="ti ti-phone" style="font-size:14px;"></i>전화</div>
         <div style="flex:2;padding:12px;background:var(--gold);border-radius:11px;font-size:13px;font-weight:700;color:#fff;text-align:center;cursor:pointer;">이 중개사에게 의뢰하기 →</div>
       </div>
 
@@ -608,6 +608,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
     <button onclick="doLogout()" style="width:100%;padding:13px;background:none;border:1.5px solid rgba(0,0,0,0.08);border-radius:12px;font-size:14px;font-weight:500;color:#6B6B6B;cursor:pointer;font-family:inherit;">로그아웃</button>
   </div>
 </div>
+
+<!-- 토스트 알림 -->
+<div id="toast"></div>
 
 <!-- PWA 배너 -->
 <div id="install-banner" style="display:none;position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:388px;background:var(--sf);border:1.5px solid var(--gold);border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:200;align-items:center;gap:12px;">
@@ -644,6 +647,7 @@ function go(id){
     });
   });
   if(id==='s-home') loadInquiries();
+  if(id==='s-profile') loadAgentProfile();
 }
 
 function switchTab(t){
@@ -704,6 +708,7 @@ sb.auth.onAuthStateChange(function(event, session){
       window.history.replaceState(null,'','/');
     }
     go('s-home');
+    loadAgentProfile();
   } else if(event==='INITIAL_SESSION' && !session && !isCallback){
     // 콜백이 아닌데 세션 없음 = 로그인 안 된 상태
     currentSession = null;
@@ -843,6 +848,230 @@ sb.channel('inquiries-realtime')
   })
   .subscribe();
 
+// ══ 프로필 (agents 테이블 연동) ══
+var currentAgent = null;                       // 로그인한 중개사의 agents 행
+var SPEC_OPTIONS = ['아파트','빌라','오피스텔','상가','토지','매매','전월세'];
+var selectedSpec = [];                         // 선택된 전문 분야
+
+function showToast(msg, isError){
+  var el = document.getElementById('toast');
+  if(!el){ alert(msg); return; }
+  el.textContent = msg;
+  el.style.background = isError ? '#FEF2F2' : '#F0FDF4';
+  el.style.color = isError ? '#DC2626' : '#16A34A';
+  el.style.border = '1px solid ' + (isError ? '#FCA5A5' : '#86EFAC');
+  el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(function(){ el.style.display='none'; }, 2600);
+}
+
+function setProfStatus(msg, isError){
+  var el = document.getElementById('prof-status');
+  if(!el) return;
+  if(!msg){ el.style.display='none'; return; }
+  el.style.display = 'block';
+  el.textContent = msg;
+  el.style.background = isError ? '#FEF2F2' : 'var(--blb)';
+  el.style.color = isError ? '#DC2626' : 'var(--bl)';
+  el.style.border = '.5px solid ' + (isError ? 'rgba(220,38,38,.25)' : 'rgba(37,99,235,.2)');
+}
+
+// speciality는 자유 텍스트라 쉼표로 나눠서 칩으로 다룸
+function parseSpec(text){
+  if(!text) return [];
+  return String(text).split(/[,·|]/).map(function(s){return s.trim();}).filter(function(s){return s;});
+}
+
+var specOptions = [];  // 화면에 그려진 칩 목록 (기본 옵션 + DB에 있던 값)
+
+function renderSpecChips(){
+  var box = document.getElementById('p-spec-chips');
+  if(!box) return;
+  specOptions = SPEC_OPTIONS.slice();
+  selectedSpec.forEach(function(s){ if(specOptions.indexOf(s) === -1) specOptions.push(s); });
+  box.innerHTML = specOptions.map(function(s, i){
+    var on = selectedSpec.indexOf(s) > -1 ? ' on' : '';
+    return '<div class="chip' + on + '" onclick="toggleSpec(this,' + i + ')">' + escapeHtml(s) + '</div>';
+  }).join('');
+}
+
+function toggleSpec(el, idx){
+  var value = specOptions[idx];
+  var i = selectedSpec.indexOf(value);
+  if(i > -1) selectedSpec.splice(i, 1);
+  else selectedSpec.push(value);
+  el.classList.toggle('on', i === -1);
+  renderPreview();
+}
+
+// 프로필 사진은 아직 없어서 이름 앞 2글자 또는 기본 아이콘으로 표시
+function setAvatar(id, name, iconSize){
+  var el = document.getElementById(id);
+  if(!el) return;
+  var n = String(name || '').trim().slice(0, 2);
+  if(n){ el.textContent = n; }
+  else { el.innerHTML = '<i class="ti ti-user" style="font-size:' + iconSize + 'px;"></i>'; }
+}
+
+// 1) 프로필 조회
+async function loadAgentProfile(){
+  if(!currentSession) return;
+  var r = await sb.from('agents').select('*').eq('user_id', currentSession.user.id).maybeSingle();
+
+  if(r.error){
+    setProfStatus('프로필을 불러오지 못했어요: ' + r.error.message, 1);
+    return;
+  }
+  if(!r.data){
+    currentAgent = null;
+    setProfStatus('이 계정에 연결된 중개사 정보가 없어요. 등록번호로 가입한 계정인지 확인해주세요.', 1);
+    fillProfileForm({});
+    return;
+  }
+
+  setProfStatus('');
+  currentAgent = r.data;
+  fillProfileForm(currentAgent);
+  fillHomeBar(currentAgent);
+}
+
+function fillProfileForm(a){
+  var set = function(id, v){ var el = document.getElementById(id); if(el) el.value = (v == null ? '' : v); };
+  set('p-office', a.office_name);
+  set('p-reg', a.reg_number);
+  set('p-address', a.address);
+  set('p-phone', a.phone);
+  set('p-career', a.career_years);
+  set('p-intro', a.profile_intro);
+  selectedSpec = parseSpec(a.speciality);
+  renderSpecChips();
+
+  var name = a.office_name || '중개사님';
+  var cardName = document.getElementById('prof-card-name');
+  var cardSub = document.getElementById('prof-card-sub');
+  var cardCert = document.getElementById('prof-card-cert');
+  if(cardName) cardName.textContent = name;
+  if(cardSub) cardSub.textContent = a.address
+    ? a.address + (a.career_years ? ' · 경력 ' + a.career_years + '년' : '')
+    : (a.career_years ? '경력 ' + a.career_years + '년' : '기본정보를 채워주세요');
+  if(cardCert) cardCert.style.display = a.certified ? 'inline-block' : 'none';
+  setAvatar('prof-av', a.office_name, 24);
+
+  renderPreview();
+}
+
+function fillHomeBar(a){
+  var n = document.getElementById('home-name');
+  var c = document.getElementById('home-cert');
+  if(n) n.textContent = a.office_name || '중개사님';
+  if(c) c.innerHTML = a.certified
+    ? '<i class="ti ti-circle-check" style="font-size:12px;"></i>홈즈톡 인증 회원'
+    : '<i class="ti ti-circle-dashed" style="font-size:12px;"></i>인증 대기 회원';
+  setAvatar('home-av', a.office_name, 20);
+}
+
+// 2) 프로필 저장 (수정 가능 항목만 업데이트)
+async function saveAgentProfile(){
+  if(!currentSession){ showToast('로그인이 필요해요.', 1); return; }
+  if(!currentAgent){ showToast('연결된 중개사 정보가 없어 저장할 수 없어요.', 1); return; }
+
+  var phone = document.getElementById('p-phone').value.trim();
+  var careerRaw = document.getElementById('p-career').value.trim();
+  var intro = document.getElementById('p-intro').value.trim();
+
+  var career = null;
+  if(careerRaw !== ''){
+    career = parseInt(careerRaw, 10);
+    if(isNaN(career) || career < 0 || career > 70){ showToast('경력은 0~70 사이 숫자로 입력해주세요.', 1); return; }
+  }
+
+  var payload = {
+    phone: phone || null,
+    career_years: career,
+    speciality: selectedSpec.length ? selectedSpec.join(', ') : null,
+    profile_intro: intro || null
+  };
+
+  var btn = document.getElementById('prof-save-btn');
+  if(btn) btn.textContent = '저장 중...';
+
+  var r = await sb.from('agents').update(payload).eq('user_id', currentSession.user.id).select().maybeSingle();
+
+  if(btn) btn.textContent = '저장';
+
+  if(r.error){ showToast('저장에 실패했어요: ' + r.error.message, 1); return; }
+  if(!r.data){ showToast('저장 대상 중개사 정보를 찾지 못했어요.', 1); return; }
+
+  currentAgent = r.data;
+  fillProfileForm(currentAgent);
+  fillHomeBar(currentAgent);
+  showToast('프로필이 저장됐어요!', 0);
+}
+
+// 3) 미리보기 (소비자에게 보이는 모습) — 저장 전 입력값까지 반영
+function renderPreview(){
+  var a = currentAgent || {};
+  // 폼이 있으면 폼 값(저장 전 편집분 포함), 없으면 DB 값
+  var get = function(id, dbVal){
+    var el = document.getElementById(id);
+    return el ? el.value.trim() : (dbVal == null ? '' : String(dbVal));
+  };
+  var office = a.office_name || '';
+  var phone = get('p-phone', a.phone);
+  var career = get('p-career', a.career_years);
+  var intro = get('p-intro', a.profile_intro);
+  var address = a.address || '';
+  var specs = selectedSpec.length ? selectedSpec : parseSpec(a.speciality);
+
+  var set = function(id, v){ var el = document.getElementById(id); if(el) el.textContent = v; };
+  set('pv-name', office || '중개사님');
+  var subParts = [];
+  if(career) subParts.push('경력 ' + career + '년');
+  if(specs.length) subParts.push(specs[0] + ' 전문');
+  set('pv-sub', subParts.length ? subParts.join(' · ') : '기본정보를 채우면 여기에 표시돼요');
+  set('pv-intro', intro || '소개글이 아직 없어요.');
+  set('pv-address', address || '주소 정보 없음');
+
+  setAvatar('pv-av', office, 22);
+
+  var cert = document.getElementById('pv-cert');
+  if(cert) cert.style.display = a.certified ? 'block' : 'none';
+
+  var tags = document.getElementById('pv-tags');
+  if(tags){
+    var html = a.certified ? '<span style="padding:3px 8px;border-radius:8px;font-size:11px;background:var(--gl);color:var(--gd);">#홈즈톡인증</span>' : '';
+    html += specs.map(function(s){
+      return '<span style="padding:3px 8px;border-radius:8px;font-size:11px;background:rgba(0,0,0,.05);color:var(--t2);">#' + escapeHtml(s) + '</span>';
+    }).join('');
+    tags.innerHTML = html || '<span style="font-size:11px;color:var(--t3);">전문 분야를 선택하면 태그가 보여요</span>';
+  }
+
+  var pvPhone = document.getElementById('pv-phone');
+  if(pvPhone) pvPhone.style.opacity = phone ? '1' : '.4';
+
+  // 완성도
+  var checks = [
+    {ok: !!office && !!address, label: '기본정보(사무소·주소) 등록'},
+    {ok: !!phone, label: '전화번호 등록'},
+    {ok: !!career, label: '경력 등록'},
+    {ok: specs.length > 0, label: '전문 분야 등록'},
+    {ok: !!intro, label: '한 줄 소개 등록'}
+  ];
+  var done = checks.filter(function(c){return c.ok;}).length;
+  var pct = Math.round(done / checks.length * 100);
+  var pctEl = document.getElementById('pv-pct'), barEl = document.getElementById('pv-bar');
+  if(pctEl) pctEl.textContent = pct + '%';
+  if(barEl) barEl.style.width = pct + '%';
+  var box = document.getElementById('pv-check');
+  if(box){
+    box.innerHTML = checks.map(function(c){
+      return '<div style="display:flex;align-items:center;gap:7px;font-size:12px;">'
+        + '<i class="ti ti-' + (c.ok ? 'check' : 'x') + '" style="color:' + (c.ok ? 'var(--gn)' : 'var(--t3)') + ';font-size:13px;"></i>'
+        + '<span style="color:' + (c.ok ? 'var(--t2)' : 'var(--t3)') + ';">' + c.label + (c.ok ? '' : ' (미등록)') + '</span></div>';
+    }).join('');
+  }
+}
+
 function showProfTab(tab){
   document.querySelectorAll('.ptab').forEach(function(t){t.classList.remove('on');});
   if(event&&event.currentTarget) event.currentTarget.classList.add('on');
@@ -850,6 +1079,7 @@ function showProfTab(tab){
     var el=document.getElementById('prof-'+t);
     if(el) el.style.display=t===tab?'block':'none';
   });
+  if(tab==='미리보기') renderPreview();
 }
 var deferredPrompt;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferredPrompt=e;if(!window.matchMedia('(display-mode:standalone)').matches)document.getElementById('install-banner').style.display='flex';});
