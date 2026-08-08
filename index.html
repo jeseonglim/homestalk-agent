@@ -18,47 +18,66 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --gold:#E8A020;--gl:#FFF3DC;--gd:#B87010;
-  --bg:#F4F3EF;--sf:#fff;--br:rgba(0,0,0,0.08);
+  --gold:#E8A020;--gl:#FFF8E7;--gd:#B87010;
+  --bg:#FAFAF5;--sf:#fff;--br:#F0E8D8;
   --tx:#1A1A1A;--t2:#6B6B6B;--t3:#9B9B9B;
   --gn:#16A34A;--gnb:#DCFCE7;
   --rd:#DC2626;--rdb:#FEE2E2;
   --or:#F97316;--orb:#FFF7ED;
   --pu:#7C3AED;--pub:#F5F3FF;
   --bl:#2563EB;--blb:#EFF6FF;
+  /* sweet-praline 디자인 토큰 */
+  --rs:10px;--r:12px;--rl:16px;
+  --sh:0 1px 4px rgba(0,0,0,.04);
+  --sh2:0 6px 20px rgba(0,0,0,.07);
+  --ease:.18s cubic-bezier(.4,0,.2,1);
 }
-body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh;max-width:420px;margin:0 auto;}
+html{-webkit-text-size-adjust:100%;}
+body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;max-width:420px;margin:0 auto;letter-spacing:-.01em;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
+@media(min-width:460px){body{box-shadow:0 0 48px rgba(0,0,0,.06);}}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.12);border-radius:2px;}
 .screen{display:none;}
-.screen.on{display:block;}
+.screen.on{display:block;animation:fadeIn .22s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
 
 /* 공통 */
-.hdr{padding:12px 16px;background:var(--sf);border-bottom:.5px solid var(--br);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
-.logo{font-size:17px;font-weight:700;color:var(--tx);}
+.hdr{padding:15px 18px;background:var(--sf);border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.logo{font-size:17px;font-weight:700;color:var(--tx);letter-spacing:-.03em;}
 .logo span{color:var(--gold);}
-.back{font-size:20px;color:var(--t2);cursor:pointer;padding:4px;}
-.nav{display:flex;background:var(--sf);border-top:.5px solid var(--br);position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;z-index:100;}
-.ni{flex:1;padding:10px 4px;text-align:center;cursor:pointer;}
-.ni i{font-size:20px;color:var(--t3);display:block;margin-bottom:2px;}
-.ni span{font-size:10px;color:var(--t3);}
-.ni.on i,.ni.on span{color:var(--gold);}
-.btn-gold{width:100%;padding:14px;background:var(--gold);border:none;border-radius:12px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;}
-.btn-outline{width:100%;padding:13px;background:var(--sf);border:1.5px solid var(--gold);border-radius:12px;font-size:14px;font-weight:500;color:var(--gd);cursor:pointer;font-family:inherit;}
-.chip{padding:7px 14px;border-radius:20px;border:.5px solid var(--br);font-size:12px;color:var(--t2);cursor:pointer;background:var(--sf);display:inline-block;}
-.chip.on{background:var(--gl);border-color:var(--gold);color:var(--gd);font-weight:500;}
-.input{width:100%;padding:13px 14px;border:1.5px solid var(--br);border-radius:12px;font-size:14px;color:var(--tx);background:var(--sf);font-family:inherit;}
-.input:focus{outline:none;border-color:var(--gold);}
-.input[readonly]{background:rgba(0,0,0,.04);color:var(--t2);}
-.input[readonly]:focus{border-color:var(--br);}
-.ro-note{font-size:11px;color:var(--t3);margin:-8px 0 12px;}
-#toast{display:none;position:fixed;bottom:96px;left:50%;transform:translateX(-50%);max-width:360px;width:calc(100% - 48px);padding:12px 16px;border-radius:12px;font-size:13px;font-weight:500;text-align:center;z-index:300;box-shadow:0 6px 20px rgba(0,0,0,.15);}
-.section{padding:16px;}
-.label{font-size:12px;font-weight:600;color:var(--t2);margin-bottom:8px;display:block;}
-.card{background:var(--sf);border:.5px solid var(--br);border-radius:16px;padding:16px;margin-bottom:10px;}
+.back{font-size:20px;color:var(--t2);cursor:pointer;padding:4px;border-radius:9px;transition:all var(--ease);}
+.back:hover{background:var(--gl);color:var(--gd);}
+.nav{display:flex;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);-webkit-backdrop-filter:saturate(180%) blur(12px);border-top:1px solid var(--br);box-shadow:0 -2px 18px rgba(0,0,0,.04);position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;z-index:100;padding-bottom:env(safe-area-inset-bottom);}
+.ni{flex:1;padding:9px 4px 11px;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.ni i{font-size:20px;color:var(--t3);display:block;width:48px;margin:0 auto 5px;padding:5px 0;border-radius:12px;transition:all var(--ease);}
+.ni span{font-size:10px;color:var(--t3);font-weight:500;letter-spacing:-.02em;transition:color var(--ease);}
+.ni:hover i{color:var(--gd);}
+.ni.on i{color:var(--gd);background:var(--gl);}
+.ni.on span{color:var(--gd);font-weight:600;}
+.btn-gold{width:100%;padding:15px;background:var(--gold);border:none;border-radius:var(--r);font-size:15px;font-weight:600;color:#fff;cursor:pointer;font-family:inherit;letter-spacing:-.01em;box-shadow:0 2px 8px rgba(232,160,32,.25);transition:all var(--ease);}
+.btn-gold:hover{background:var(--gd);box-shadow:0 5px 16px rgba(232,160,32,.32);}
+.btn-gold:active{transform:translateY(1px);box-shadow:0 1px 4px rgba(232,160,32,.25);}
+.btn-outline{width:100%;padding:14px;background:var(--sf);border:1.5px solid var(--gold);border-radius:var(--r);font-size:14px;font-weight:600;color:var(--gd);cursor:pointer;font-family:inherit;transition:all var(--ease);}
+.btn-outline:hover{background:var(--gl);}
+.chip{padding:8px 15px;border-radius:100px;border:1px solid var(--br);font-size:12px;font-weight:500;color:var(--t2);cursor:pointer;background:var(--sf);display:inline-block;transition:all var(--ease);}
+.chip:hover{border-color:var(--gold);color:var(--gd);}
+.chip.on{background:var(--gl);border-color:var(--gold);color:var(--gd);font-weight:600;}
+.input{width:100%;padding:14px 15px;border:1px solid var(--br);border-radius:var(--r);font-size:14px;color:var(--tx);background:var(--sf);font-family:inherit;transition:border-color var(--ease),box-shadow var(--ease);}
+.input::placeholder{color:var(--t3);}
+.input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(232,160,32,.13);}
+.input[readonly]{background:#FBF9F4;color:var(--t2);}
+.input[readonly]:focus{border-color:var(--br);box-shadow:none;}
+.ro-note{font-size:11px;color:var(--t3);margin:-8px 0 14px;line-height:1.6;}
+#toast{display:none;position:fixed;bottom:100px;left:50%;transform:translateX(-50%);max-width:360px;width:calc(100% - 48px);padding:13px 16px;border-radius:14px;font-size:13px;font-weight:500;text-align:center;z-index:300;box-shadow:var(--sh2);}
+.section{padding:20px 18px;}
+.label{font-size:11px;font-weight:600;color:var(--t3);margin-bottom:9px;display:block;letter-spacing:.3px;}
+.card{background:var(--sf);border:1px solid var(--br);border-radius:var(--rl);padding:18px;margin-bottom:12px;box-shadow:var(--sh);}
 .card.gold{border-color:var(--gold);background:var(--gl);}
 .card.pu{border-color:var(--pu);background:var(--pub);}
 .card.green{border-color:var(--gn);background:var(--gnb);}
 .card.orange{border-color:var(--or);background:var(--orb);}
-.tag{padding:3px 9px;border-radius:8px;font-size:11px;}
+.tag{padding:4px 10px;border-radius:8px;font-size:11px;font-weight:500;display:inline-block;}
 .tag-g{background:var(--gl);color:var(--gd);}
 .tag-gy{background:rgba(0,0,0,.05);color:var(--t2);}
 .tag-gn{background:var(--gnb);color:var(--gn);}
@@ -66,57 +85,68 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
 .tag-pu{background:var(--pub);color:var(--pu);}
 .tag-or{background:var(--orb);color:var(--or);}
 .av{width:44px;height:44px;border-radius:50%;background:var(--gl);border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--gd);flex-shrink:0;}
-.pb{padding-bottom:80px;}
-.divider{height:.5px;background:var(--br);margin:0 16px;}
+.pb{padding-bottom:104px;}
+.divider{height:1px;background:var(--br);margin:0 18px;}
 
 /* 로그인 화면 */
-.login-hero{padding:48px 24px 32px;text-align:center;}
-.login-icon{width:80px;height:80px;border-radius:24px;background:var(--gold);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:36px;}
+.login-hero{padding:56px 26px 36px;text-align:center;}
+.login-icon{width:84px;height:84px;border-radius:26px;background:linear-gradient(135deg,var(--gold),#F2B44A);display:flex;align-items:center;justify-content:center;margin:0 auto 22px;font-size:38px;box-shadow:0 10px 28px rgba(232,160,32,.3);}
 
 /* 의뢰함 */
-.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px 16px;border-bottom:.5px solid var(--br);}
-.stat{background:rgba(0,0,0,.04);border-radius:10px;padding:10px 6px;text-align:center;}
-.stat-val{font-size:20px;font-weight:700;}
-.stat-label{font-size:10px;color:var(--t3);margin-top:2px;}
-.tabs{display:flex;border-bottom:.5px solid var(--br);}
-.tab{flex:1;padding:10px;text-align:center;font-size:12px;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;}
-.tab.on{color:var(--gold);border-bottom-color:var(--gold);font-weight:600;}
-.req-card{margin:8px 16px;border-radius:14px;overflow:hidden;border:.5px solid var(--br);}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;padding:4px 18px 16px;}
+.stat{background:var(--sf);border:1px solid var(--br);border-radius:14px;padding:14px 6px;text-align:center;box-shadow:var(--sh);}
+.stat-val{font-size:21px;font-weight:700;letter-spacing:-.04em;}
+.stat-label{font-size:10px;color:var(--t3);margin-top:3px;}
+.tabs{display:flex;border-bottom:1px solid var(--br);background:var(--sf);}
+.tab{flex:1;padding:13px 6px;text-align:center;font-size:13px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;transition:all var(--ease);}
+.tab:hover{color:var(--gd);}
+.tab.on{color:var(--gd);border-bottom-color:var(--gold);font-weight:600;}
+.req-card{margin:10px 18px;border-radius:14px;overflow:hidden;border:1px solid var(--br);background:var(--sf);box-shadow:var(--sh);transition:box-shadow var(--ease);}
+.req-card:hover{box-shadow:var(--sh2);}
 .req-card.gold{border-color:var(--gold);}
 .req-card.pu{border-color:var(--pu);}
-.req-hdr{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:.5px solid var(--br);}
+.req-hdr{padding:11px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--br);}
 .req-card.gold .req-hdr{background:var(--gl);border-bottom-color:rgba(232,160,32,.2);}
 .req-card.pu .req-hdr{background:var(--pub);border-bottom-color:rgba(124,58,237,.15);}
-.req-body{padding:12px 14px;background:var(--sf);}
-.act-btns{display:flex;gap:6px;margin-top:10px;}
-.act-btn{flex:1;padding:9px;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;text-align:center;border:none;font-family:inherit;}
+.req-body{padding:14px;background:var(--sf);}
+.act-btns{display:flex;gap:7px;margin-top:12px;}
+.act-btn{flex:1;padding:11px;border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer;text-align:center;border:none;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:4px;transition:all var(--ease);}
 .act-btn.gold{background:var(--gold);color:#fff;}
-.act-btn.outline{background:var(--sf);border:.5px solid var(--br);color:var(--t2);}
+.act-btn.gold:hover{background:var(--gd);}
+.act-btn.outline{background:var(--sf);border:1px solid var(--br);color:var(--t2);}
+.act-btn.outline:hover{background:var(--gl);border-color:var(--gold);color:var(--gd);}
 .act-btn.pu{background:var(--pu);color:#fff;}
+.act-btn.pu:hover{background:#6D28D9;}
 
 /* 광고 등록 */
-.ch-tabs{display:flex;overflow-x:auto;border-bottom:.5px solid var(--br);padding:0 8px;}
-.ch-tab{flex-shrink:0;padding:10px 14px;font-size:13px;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;}
-.ch-tab.on{color:var(--gold);border-bottom-color:var(--gold);font-weight:600;}
+.ch-tabs{display:flex;overflow-x:auto;border-bottom:1px solid var(--br);padding:0 10px;background:var(--sf);}
+.ch-tabs::-webkit-scrollbar{display:none;}
+.ch-tab{flex-shrink:0;padding:13px 15px;font-size:13px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all var(--ease);}
+.ch-tab:hover{color:var(--gd);}
+.ch-tab.on{color:var(--gd);border-bottom-color:var(--gold);font-weight:600;}
 
 /* 프로필 */
-.prof-tab{display:flex;overflow-x:auto;gap:6px;padding:10px 16px;border-bottom:.5px solid var(--br);}
-.ptab{flex-shrink:0;padding:7px 14px;border-radius:20px;border:.5px solid var(--br);font-size:12px;color:var(--t2);cursor:pointer;background:var(--sf);}
-.ptab.on{background:var(--gl);border-color:var(--gold);color:var(--gd);font-weight:500;}
-.mbti-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
-.mbti-item{background:rgba(0,0,0,.03);border-radius:10px;padding:10px;}
-.mbti-label{font-size:11px;color:var(--t3);text-align:center;margin-bottom:6px;}
-.mbti-btns{display:flex;gap:5px;}
-.mbti-btn{flex:1;padding:8px;border-radius:8px;border:.5px solid var(--br);font-size:13px;font-weight:500;text-align:center;cursor:pointer;background:var(--sf);color:var(--t2);}
+.prof-tab{display:flex;overflow-x:auto;gap:7px;padding:13px 18px;border-bottom:1px solid var(--br);background:var(--sf);}
+.prof-tab::-webkit-scrollbar{display:none;}
+.ptab{flex-shrink:0;padding:8px 15px;border-radius:100px;border:1px solid var(--br);font-size:12px;font-weight:500;color:var(--t2);cursor:pointer;background:var(--sf);transition:all var(--ease);}
+.ptab:hover{border-color:var(--gold);color:var(--gd);}
+.ptab.on{background:var(--gl);border-color:var(--gold);color:var(--gd);font-weight:600;}
+.mbti-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:16px;}
+.mbti-item{background:var(--sf);border:1px solid var(--br);border-radius:var(--r);padding:12px;box-shadow:var(--sh);}
+.mbti-label{font-size:11px;color:var(--t3);text-align:center;margin-bottom:8px;}
+.mbti-btns{display:flex;gap:6px;}
+.mbti-btn{flex:1;padding:9px;border-radius:9px;border:1px solid var(--br);font-size:13px;font-weight:600;text-align:center;cursor:pointer;background:var(--sf);color:var(--t2);transition:all var(--ease);}
+.mbti-btn:hover{border-color:var(--gold);color:var(--gd);}
 .mbti-btn.on{background:var(--gl);border-color:var(--gold);color:var(--gd);}
-.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-.photo-item{aspect-ratio:1;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;}
+.photo-item{aspect-ratio:1;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:all var(--ease);}
 .photo-item.filled{border:1.5px solid var(--gold);background:var(--gl);}
-.photo-item.empty{border:1.5px dashed var(--br);background:rgba(0,0,0,.02);}
+.photo-item.empty{border:1.5px dashed var(--br);background:var(--sf);}
+.photo-item.empty:hover{border-color:var(--gold);background:var(--gl);}
 
 /* QR */
-.qr-box{margin:20px 16px;background:var(--sf);border:1.5px solid var(--gold);border-radius:18px;padding:20px;text-align:center;}
-.qr-frame{width:160px;height:160px;border:2px solid var(--gold);border-radius:14px;margin:0 auto 14px;position:relative;display:flex;align-items:center;justify-content:center;background:#fff;}
+.qr-box{margin:18px;background:var(--sf);border:1px solid var(--gold);border-radius:20px;padding:24px 20px;text-align:center;box-shadow:var(--sh2);}
+.qr-frame{width:170px;height:170px;border:2px solid var(--gold);border-radius:16px;margin:0 auto 16px;position:relative;display:flex;align-items:center;justify-content:center;background:#fff;}
 .qr-corner{position:absolute;width:22px;height:22px;border:3px solid var(--gold);}
 .qr-corner.tl{top:4px;left:4px;border-right:none;border-bottom:none;}
 .qr-corner.tr{top:4px;right:4px;border-left:none;border-bottom:none;}
@@ -156,8 +186,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
     </div>
     <div id="auth-msg" style="margin-top:12px;font-size:13px;display:none;padding:12px;border-radius:12px;"></div>
   </div>
-  <div style="padding:0 24px;">
-    <div style="display:flex;flex-direction:column;gap:10px;padding:20px;background:rgba(0,0,0,.03);border-radius:16px;margin-bottom:20px;">
+  <div style="padding:0 26px;">
+    <div style="display:flex;flex-direction:column;gap:14px;padding:22px;background:var(--sf);border:1px solid var(--br);border-radius:18px;margin-bottom:22px;box-shadow:var(--sh);">
       <div style="display:flex;align-items:center;gap:12px;"><span style="font-size:22px;">✨</span><div><div style="font-size:14px;font-weight:600;margin-bottom:2px;">AI 중개사 매칭</div><div style="font-size:12px;color:var(--t2);">MBTI·사주 등록하면 소비자와 자동 매칭</div></div></div>
       <div style="display:flex;align-items:center;gap:12px;"><span style="font-size:22px;">📱</span><div><div style="font-size:14px;font-weight:600;margin-bottom:2px;">QR 물건 접수</div><div style="font-size:12px;color:var(--t2);">사무실 QR로 방문 고객 물건 바로 접수</div></div></div>
       <div style="display:flex;align-items:center;gap:12px;"><span style="font-size:22px;">📊</span><div><div style="font-size:14px;font-weight:600;margin-bottom:2px;">광고 채널 관리</div><div style="font-size:12px;color:var(--t2);">네이버·직방·다방 광고 한 곳에서 관리</div></div></div>
@@ -178,13 +208,13 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
   </div>
 
   <!-- 중개사 정보 바 -->
-  <div style="padding:12px 16px;background:var(--gl);border-bottom:.5px solid rgba(232,160,32,.3);display:flex;align-items:center;gap:10px;">
+  <div style="margin:16px 18px 0;padding:14px 16px;background:var(--gl);border:1.5px solid var(--gold);border-radius:16px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh);">
     <div class="av" id="home-av"><i class="ti ti-user" style="font-size:20px;"></i></div>
     <div style="flex:1;">
-      <div style="font-size:14px;font-weight:600;color:var(--tx);" id="home-name">중개사님</div>
-      <div style="font-size:11px;color:var(--gd);display:flex;align-items:center;gap:4px;margin-top:2px;" id="home-cert"><i class="ti ti-circle-check" style="font-size:12px;"></i>홈즈톡 인증 회원</div>
+      <div style="font-size:15px;font-weight:600;color:var(--tx);letter-spacing:-.02em;" id="home-name">중개사님</div>
+      <div style="font-size:11px;color:var(--gd);display:flex;align-items:center;gap:4px;margin-top:3px;" id="home-cert"><i class="ti ti-circle-check" style="font-size:12px;"></i>홈즈톡 인증 회원</div>
     </div>
-    <div style="font-size:11px;padding:3px 10px;background:var(--gold);color:#fff;border-radius:20px;font-weight:600;">NEW 3</div>
+    <div style="font-size:11px;padding:4px 11px;background:var(--gold);color:#fff;border-radius:100px;font-weight:600;">NEW 3</div>
   </div>
 
   <!-- 통계 -->
@@ -210,7 +240,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
     <div style="font-size:13px;color:var(--t3);">표시할 의뢰가 없어요</div>
   </div>
 
-  <div style="height:80px;"></div>
+  <div style="height:104px;"></div>
   <div class="nav">
     <div class="ni on" onclick="go('s-home')"><i class="ti ti-bell"></i><span>의뢰함</span></div>
     <div class="ni" onclick="go('s-qr')"><i class="ti ti-qrcode"></i><span>내 QR</span></div>
@@ -281,23 +311,23 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
   </div>
 
   <!-- QR 포함 정보 -->
-  <div style="padding:0 16px;margin-bottom:12px;">
-    <div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:8px;">QR코드에 포함된 정보</div>
-    <div style="display:flex;flex-direction:column;gap:6px;">
-      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(0,0,0,.03);border-radius:10px;"><i class="ti ti-user-circle" style="font-size:18px;color:var(--gold);"></i><span style="flex:1;font-size:13px;">중개사 정보 자동 연결</span><i class="ti ti-check" style="font-size:15px;color:var(--gn);"></i></div>
-      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(0,0,0,.03);border-radius:10px;"><i class="ti ti-map-pin" style="font-size:18px;color:var(--gold);"></i><span style="flex:1;font-size:13px;">사무실 위치 자동 입력</span><i class="ti ti-check" style="font-size:15px;color:var(--gn);"></i></div>
-      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(0,0,0,.03);border-radius:10px;"><i class="ti ti-brand-instagram" style="font-size:18px;color:var(--gold);"></i><span style="flex:1;font-size:13px;">SNS 프로필 자동 연결</span><i class="ti ti-check" style="font-size:15px;color:var(--gn);"></i></div>
+  <div style="padding:0 18px;margin-bottom:16px;">
+    <div class="label">QR코드에 포함된 정보</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--sf);border:1px solid var(--br);border-radius:12px;box-shadow:var(--sh);"><i class="ti ti-user-circle" style="font-size:18px;color:var(--gold);"></i><span style="flex:1;font-size:13px;">중개사 정보 자동 연결</span><i class="ti ti-check" style="font-size:15px;color:var(--gn);"></i></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--sf);border:1px solid var(--br);border-radius:12px;box-shadow:var(--sh);"><i class="ti ti-map-pin" style="font-size:18px;color:var(--gold);"></i><span style="flex:1;font-size:13px;">사무실 위치 자동 입력</span><i class="ti ti-check" style="font-size:15px;color:var(--gn);"></i></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--sf);border:1px solid var(--br);border-radius:12px;box-shadow:var(--sh);"><i class="ti ti-brand-instagram" style="font-size:18px;color:var(--gold);"></i><span style="flex:1;font-size:13px;">SNS 프로필 자동 연결</span><i class="ti ti-check" style="font-size:15px;color:var(--gn);"></i></div>
     </div>
   </div>
 
   <!-- 공유 옵션 -->
-  <div style="padding:0 16px 100px;display:flex;flex-direction:column;gap:8px;">
-    <div style="display:flex;align-items:center;gap:10px;padding:14px;border:.5px solid var(--br);border-radius:12px;cursor:pointer;" onclick="alert('인쇄 설정이 열려요!')">
+  <div style="padding:0 18px 120px;display:flex;flex-direction:column;gap:10px;">
+    <div style="display:flex;align-items:center;gap:12px;padding:16px;background:var(--sf);border:1px solid var(--br);border-radius:14px;box-shadow:var(--sh);cursor:pointer;" onclick="alert('인쇄 설정이 열려요!')">
       <i class="ti ti-printer" style="font-size:20px;color:var(--t2);"></i>
       <div style="flex:1;"><div style="font-size:14px;font-weight:500;">사무실 프린트 출력</div><div style="font-size:12px;color:var(--t3);margin-top:2px;">A4 / 명함 / 스티커</div></div>
       <i class="ti ti-chevron-right" style="font-size:16px;color:var(--t3);"></i>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;padding:14px;border:.5px solid var(--br);border-radius:12px;cursor:pointer;" onclick="alert('링크가 복사됐어요!')">
+    <div style="display:flex;align-items:center;gap:12px;padding:16px;background:var(--sf);border:1px solid var(--br);border-radius:14px;box-shadow:var(--sh);cursor:pointer;" onclick="alert('링크가 복사됐어요!')">
       <i class="ti ti-link" style="font-size:20px;color:var(--t2);"></i>
       <div style="flex:1;"><div style="font-size:14px;font-weight:500;">링크로 공유</div><div style="font-size:12px;color:var(--t3);margin-top:2px;">카카오톡 · 문자</div></div>
       <i class="ti ti-chevron-right" style="font-size:16px;color:var(--t3);"></i>
@@ -321,9 +351,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
   </div>
 
   <!-- 의뢰 정보 -->
-  <div style="margin:12px 16px;padding:14px;background:var(--gl);border:1.5px solid var(--gold);border-radius:14px;">
-    <div style="font-size:11px;color:var(--gd);margin-bottom:6px;display:flex;align-items:center;gap:4px;"><i class="ti ti-user" style="font-size:12px;"></i>소비자 의뢰 내용</div>
-    <div style="font-size:15px;font-weight:700;margin-bottom:5px;">검단푸르지오 33평 · 매매 3억 5천</div>
+  <div style="margin:16px 18px;padding:18px;background:var(--gl);border:1.5px solid var(--gold);border-radius:16px;box-shadow:var(--sh);">
+    <div style="font-size:11px;color:var(--gd);margin-bottom:7px;display:flex;align-items:center;gap:4px;letter-spacing:.3px;"><i class="ti ti-user" style="font-size:12px;"></i>소비자 의뢰 내용</div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:6px;letter-spacing:-.02em;">검단푸르지오 33평 · 매매 3억 5천</div>
     <div style="font-size:13px;color:var(--t2);">3개월 이내 · 😷 마스크 착용 요청</div>
   </div>
 
@@ -349,20 +379,20 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
     <div class="label">광고 URL</div>
     <div style="display:flex;gap:8px;">
       <input class="input" style="flex:1;" placeholder="https://land.naver.com/...">
-      <button style="padding:13px 16px;background:var(--gold);border:none;border-radius:12px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;font-family:inherit;" onclick="alert('URL 확인 완료!')">확인</button>
+      <button style="padding:14px 18px;background:var(--gold);border:none;border-radius:12px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(232,160,32,.25);" onclick="alert('URL 확인 완료!')">확인</button>
     </div>
   </div>
 
   <div class="section" style="border-top:.5px solid var(--br);">
     <div class="label">광고 스크린샷</div>
-    <div style="border:2px dashed var(--br);border-radius:12px;padding:24px;text-align:center;cursor:pointer;" onclick="alert('카메라/갤러리에서 사진을 선택하세요')">
+    <div style="border:1.5px dashed var(--br);background:var(--sf);border-radius:14px;padding:28px;text-align:center;cursor:pointer;" onclick="alert('카메라/갤러리에서 사진을 선택하세요')">
       <i class="ti ti-camera" style="font-size:28px;color:var(--t3);display:block;margin-bottom:8px;"></i>
       <div style="font-size:13px;color:var(--t2);">광고 화면 캡처 업로드</div>
       <div style="font-size:11px;color:var(--t3);margin-top:4px;">최대 5장</div>
     </div>
   </div>
 
-  <div style="padding:0 16px 100px;">
+  <div style="padding:4px 18px 120px;">
     <button class="btn-gold" onclick="alert('소비자에게 알림이 전송됐어요! 🎉')">소비자에게 광고 완료 알림 보내기</button>
   </div>
 
@@ -383,11 +413,11 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
   </div>
 
   <!-- 프로필 불러오기 상태 -->
-  <div id="prof-status" style="display:none;margin:12px 16px;padding:11px 14px;border-radius:12px;font-size:12px;line-height:1.6;"></div>
+  <div id="prof-status" style="display:none;margin:16px 18px 0;padding:13px 15px;border-radius:14px;font-size:12px;line-height:1.6;"></div>
 
   <!-- 프로필 카드 -->
-  <div style="margin:12px 16px;padding:14px;background:var(--gl);border:1.5px solid var(--gold);border-radius:16px;display:flex;align-items:center;gap:12px;">
-    <div class="av" id="prof-av" style="width:52px;height:52px;font-size:16px;"><i class="ti ti-user" style="font-size:24px;"></i></div>
+  <div style="margin:16px 18px;padding:18px;background:var(--gl);border:1.5px solid var(--gold);border-radius:18px;display:flex;align-items:center;gap:14px;box-shadow:var(--sh);">
+    <div class="av" id="prof-av" style="width:54px;height:54px;font-size:17px;"><i class="ti ti-user" style="font-size:24px;"></i></div>
     <div style="flex:1;">
       <div style="font-size:16px;font-weight:700;color:var(--tx);" id="prof-card-name">중개사님</div>
       <div style="font-size:12px;color:var(--t2);margin-top:3px;" id="prof-card-sub">프로필을 불러오는 중...</div>
@@ -492,16 +522,16 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
   </div>
 
   <!-- 미리보기 탭 -->
-  <div id="prof-미리보기" style="display:none;padding-bottom:80px;">
+  <div id="prof-미리보기" style="display:none;padding-bottom:104px;">
 
     <!-- 안내 배너 -->
-    <div style="margin:12px 16px;padding:11px 14px;background:var(--blb);border:.5px solid rgba(37,99,235,.2);border-radius:12px;display:flex;align-items:center;gap:8px;">
+    <div style="margin:16px 18px;padding:13px 15px;background:var(--blb);border:1px solid rgba(37,99,235,.18);border-radius:14px;display:flex;align-items:center;gap:9px;">
       <i class="ti ti-eye" style="font-size:18px;color:var(--bl);flex-shrink:0;"></i>
       <div style="font-size:12px;color:var(--bl);line-height:1.6;"><strong>소비자 눈에 보이는 내 프로필이에요.</strong><br>사진·설명·SNS를 채울수록 의뢰가 늘어요!</div>
     </div>
 
     <!-- 프로필 완성도 -->
-    <div style="margin:0 16px 14px;padding:13px 14px;background:var(--sf);border:.5px solid var(--br);border-radius:14px;">
+    <div style="margin:0 18px 16px;padding:18px;background:var(--sf);border:1px solid var(--br);border-radius:16px;box-shadow:var(--sh);">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
         <span style="font-size:13px;font-weight:600;color:var(--tx);">프로필 완성도</span>
         <span style="font-size:16px;font-weight:700;color:var(--gold);" id="pv-pct">0%</span>
@@ -513,9 +543,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
     </div>
 
     <!-- ★ 소비자에게 보이는 실제 프로필 미리보기 ★ -->
-    <div style="margin:0 16px;font-size:12px;font-weight:600;color:var(--t3);margin-bottom:8px;display:flex;align-items:center;gap:5px;"><i class="ti ti-device-mobile" style="font-size:14px;"></i>소비자 화면 미리보기</div>
+    <div style="margin:0 18px 10px;font-size:11px;font-weight:600;color:var(--t3);letter-spacing:.3px;display:flex;align-items:center;gap:5px;"><i class="ti ti-device-mobile" style="font-size:14px;"></i>소비자 화면 미리보기</div>
 
-    <div style="margin:0 16px 80px;background:var(--sf);border:1.5px solid var(--br);border-radius:18px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.08);">
+    <div style="margin:0 18px 20px;background:var(--sf);border:1px solid var(--br);border-radius:20px;overflow:hidden;box-shadow:var(--sh2);">
 
       <!-- 사진 슬라이더 영역 -->
       <div style="height:160px;background:var(--gl);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;border-bottom:.5px solid var(--br);position:relative;">
@@ -587,7 +617,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
     </div>
 
     <!-- 개선 제안 -->
-    <div style="margin:12px 16px 0;padding:14px;background:var(--orb);border:.5px solid var(--or);border-radius:14px;">
+    <div style="margin:0 18px;padding:18px;background:var(--orb);border:1px solid rgba(249,115,22,.35);border-radius:16px;">
       <div style="font-size:13px;font-weight:600;color:var(--or);margin-bottom:8px;">📈 프로필을 완성하면 더 많은 의뢰가 와요</div>
       <div style="display:flex;flex-direction:column;gap:6px;">
         <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--t2);cursor:pointer;" onclick="showProfTab('사주');document.querySelectorAll('.ptab').forEach((t,i)=>{if(i===3)t.classList.add('on');else t.classList.remove('on')})"><div style="width:22px;height:22px;border-radius:50%;background:var(--or);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div><span>사주 등록하기 → 소비자에게 오행 궁합 분석 제공 <span style="color:var(--or);font-weight:600;">→</span></span></div>
@@ -604,8 +634,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
     <div class="ni" onclick="go('s-adup')"><i class="ti ti-speakerphone"></i><span>광고등록</span></div>
     <div class="ni on" onclick="go('s-profile')"><i class="ti ti-user"></i><span>프로필</span></div>
   </div>
-  <div style="padding:16px 16px 100px;">
-    <button onclick="doLogout()" style="width:100%;padding:13px;background:none;border:1.5px solid rgba(0,0,0,0.08);border-radius:12px;font-size:14px;font-weight:500;color:#6B6B6B;cursor:pointer;font-family:inherit;">로그아웃</button>
+  <div style="padding:4px 18px 120px;">
+    <button onclick="doLogout()" style="width:100%;padding:14px;background:var(--sf);border:1px solid var(--br);border-radius:12px;font-size:14px;font-weight:500;color:var(--t2);cursor:pointer;font-family:inherit;">로그아웃</button>
   </div>
 </div>
 
