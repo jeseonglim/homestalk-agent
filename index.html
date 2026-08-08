@@ -8,6 +8,7 @@
 <title>홈즈톡 — 중개사 파트너</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
 <meta name="theme-color" content="#E8A020">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -254,7 +255,7 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
   <div class="hdr">
     <span class="back" onclick="go('s-home')"><i class="ti ti-arrow-left"></i></span>
     <div class="logo">내 QR코드</div>
-    <i class="ti ti-download" style="font-size:20px;color:var(--t2);cursor:pointer;" onclick="alert('QR 이미지가 저장됐어요!')"></i>
+    <i class="ti ti-download" style="font-size:20px;color:var(--t2);cursor:pointer;" onclick="downloadQR()"></i>
   </div>
 
   <div class="qr-box">
@@ -264,50 +265,11 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
       <div class="qr-corner tr"></div>
       <div class="qr-corner bl"></div>
       <div class="qr-corner br"></div>
-      <svg width="110" height="110" viewBox="0 0 110 110">
-        <rect x="8" y="8" width="28" height="28" rx="3" fill="none" stroke="#1A1A1A" stroke-width="2.5"/>
-        <rect x="14" y="14" width="16" height="16" fill="#1A1A1A"/>
-        <rect x="74" y="8" width="28" height="28" rx="3" fill="none" stroke="#1A1A1A" stroke-width="2.5"/>
-        <rect x="80" y="14" width="16" height="16" fill="#1A1A1A"/>
-        <rect x="8" y="74" width="28" height="28" rx="3" fill="none" stroke="#1A1A1A" stroke-width="2.5"/>
-        <rect x="14" y="80" width="16" height="16" fill="#1A1A1A"/>
-        <rect x="46" y="8" width="6" height="6" fill="#E8A020"/>
-        <rect x="54" y="8" width="6" height="6" fill="#1A1A1A"/>
-        <rect x="46" y="16" width="6" height="6" fill="#1A1A1A"/>
-        <rect x="54" y="16" width="6" height="6" fill="#E8A020"/>
-        <rect x="46" y="46" width="6" height="6" fill="#E8A020"/>
-        <rect x="54" y="46" width="6" height="6" fill="#1A1A1A"/>
-        <rect x="62" y="46" width="6" height="6" fill="#E8A020"/>
-        <rect x="70" y="46" width="6" height="6" fill="#1A1A1A"/>
-        <rect x="78" y="46" width="6" height="6" fill="#E8A020"/>
-        <rect x="86" y="46" width="6" height="6" fill="#1A1A1A"/>
-        <rect x="94" y="46" width="6" height="6" fill="#E8A020"/>
-        <rect x="46" y="54" width="6" height="6" fill="#1A1A1A"/>
-        <rect x="54" y="54" width="6" height="6" fill="#E8A020"/>
-        <rect x="62" y="54" width="6" height="6" fill="#1A1A1A"/>
-        <rect x="70" y="54" width="6" height="6" fill="#E8A020"/>
-        <rect x="78" y="54" width="6" height="6" fill="#1A1A1A"/>
-        <rect x="46" y="62" width="6" height="6" fill="#E8A020"/>
-        <rect x="54" y="62" width="6" height="6" fill="#1A1A1A"/>
-        <rect x="62" y="62" width="6" height="6" fill="#E8A020"/>
-        <rect x="46" y="70" width="6" height="6" fill="#1A1A1A"/>
-        <rect x="54" y="70" width="6" height="6" fill="#E8A020"/>
-        <rect x="62" y="70" width="6" height="6" fill="#1A1A1A"/>
-        <rect x="70" y="70" width="6" height="6" fill="#E8A020"/>
-        <rect x="78" y="70" width="6" height="6" fill="#1A1A1A"/>
-        <rect x="86" y="70" width="6" height="6" fill="#E8A020"/>
-        <rect x="46" y="78" width="6" height="6" fill="#E8A020"/>
-        <rect x="54" y="78" width="6" height="6" fill="#1A1A1A"/>
-        <rect x="62" y="78" width="6" height="6" fill="#E8A020"/>
-        <rect x="46" y="86" width="6" height="6" fill="#1A1A1A"/>
-        <rect x="54" y="86" width="6" height="6" fill="#E8A020"/>
-        <rect x="46" y="94" width="6" height="6" fill="#E8A020"/>
-        <rect x="54" y="94" width="6" height="6" fill="#1A1A1A"/>
-        <rect x="62" y="94" width="6" height="6" fill="#E8A020"/>
-      </svg>
+      <canvas id="qr-canvas" width="150" height="150" style="width:150px;height:150px;display:block;"></canvas>
     </div>
-    <div style="font-size:15px;font-weight:700;color:var(--tx);margin-bottom:4px;">임제성 · 검단부동산</div>
-    <div style="font-size:12px;color:var(--t3);">스캔하면 물건 접수 화면으로 이동해요</div>
+    <div style="font-size:15px;font-weight:700;color:var(--tx);margin-bottom:4px;" id="qr-office">내 QR코드</div>
+    <div style="font-size:13px;font-weight:600;color:var(--gd);margin-bottom:4px;">내 QR코드를 고객에게 보여주세요</div>
+    <div style="font-size:12px;color:var(--t3);">고객이 스캔하면 물건 접수 화면으로 이동하고,<br>접수된 물건은 내 의뢰함으로 바로 들어와요</div>
   </div>
 
   <!-- QR 포함 정보 -->
@@ -327,12 +289,12 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
       <div style="flex:1;"><div style="font-size:14px;font-weight:500;">사무실 프린트 출력</div><div style="font-size:12px;color:var(--t3);margin-top:2px;">A4 / 명함 / 스티커</div></div>
       <i class="ti ti-chevron-right" style="font-size:16px;color:var(--t3);"></i>
     </div>
-    <div style="display:flex;align-items:center;gap:12px;padding:16px;background:var(--sf);border:1px solid var(--br);border-radius:14px;box-shadow:var(--sh);cursor:pointer;" onclick="alert('링크가 복사됐어요!')">
+    <div style="display:flex;align-items:center;gap:12px;padding:16px;background:var(--sf);border:1px solid var(--br);border-radius:14px;box-shadow:var(--sh);cursor:pointer;" onclick="copyQRLink()">
       <i class="ti ti-link" style="font-size:20px;color:var(--t2);"></i>
       <div style="flex:1;"><div style="font-size:14px;font-weight:500;">링크로 공유</div><div style="font-size:12px;color:var(--t3);margin-top:2px;">카카오톡 · 문자</div></div>
       <i class="ti ti-chevron-right" style="font-size:16px;color:var(--t3);"></i>
     </div>
-    <button class="btn-gold" onclick="alert('QR 이미지가 저장됐어요!')"><i class="ti ti-download" style="font-size:16px;"></i> QR코드 저장하기</button>
+    <button class="btn-gold" onclick="downloadQR()"><i class="ti ti-download" style="font-size:16px;"></i> QR코드 저장하기</button>
   </div>
 
   <div class="nav">
@@ -678,6 +640,7 @@ function go(id){
   });
   if(id==='s-home') loadInquiries();
   if(id==='s-profile') loadAgentProfile();
+  if(id==='s-qr') renderQR();
 }
 
 function switchTab(t){
@@ -828,7 +791,8 @@ async function loadInquiries(){
   var uid = currentSession.user.id;
   var q = sb.from('inquiries').select('*').order('created_at', {ascending:false});
   if(currentReqTab === 0) q = q.eq('status','대기중').eq('source','app').is('agent_id', null);
-  else if(currentReqTab === 1) q = q.eq('status','대기중').eq('source','qr').is('agent_id', null);
+  // QR 접수는 소비자앱에서 이미 나에게 배정된 상태로 들어와요
+  else if(currentReqTab === 1) q = q.eq('status','대기중').eq('source','qr').eq('agent_id', uid);
   else if(currentReqTab === 2) q = q.eq('agent_id', uid).eq('status','진행중');
   else q = q.eq('agent_id', uid).eq('status','완료');
 
@@ -845,17 +809,22 @@ async function loadInquiries(){
 }
 
 async function updateReqBadges(){
+  var uid = currentSession ? currentSession.user.id : null;
   var r0 = await sb.from('inquiries').select('id',{count:'exact',head:true}).eq('status','대기중').eq('source','app').is('agent_id', null);
-  var r1 = await sb.from('inquiries').select('id',{count:'exact',head:true}).eq('status','대기중').eq('source','qr').is('agent_id', null);
+  var r1 = uid
+    ? await sb.from('inquiries').select('id',{count:'exact',head:true}).eq('status','대기중').eq('source','qr').eq('agent_id', uid)
+    : { count: 0 };
   var b0 = document.getElementById('req-badge-0'), b1 = document.getElementById('req-badge-1');
   if(b0) b0.textContent = r0.count != null ? r0.count : 0;
   if(b1) b1.textContent = r1.count != null ? r1.count : 0;
 }
 
 // 수락하고 연락: 미배정 의뢰를 내 것으로 배정 + 진행중으로 전환
+// (QR 접수는 이미 나에게 배정돼 있으므로 그 경우도 허용)
 async function acceptInquiry(id){
   if(!currentSession) return;
-  var r = await sb.from('inquiries').update({agent_id: currentSession.user.id, status:'진행중'}).eq('id', id).is('agent_id', null);
+  var uid = currentSession.user.id;
+  var r = await sb.from('inquiries').update({agent_id: uid, status:'진행중'}).eq('id', id).or('agent_id.is.null,agent_id.eq.' + uid);
   if(r.error){ alert('수락 처리에 실패했어요: ' + r.error.message); return; }
   alert('수락 완료! 소비자에게 알림이 전송됐어요.');
   loadInquiries();
@@ -877,6 +846,74 @@ sb.channel('inquiries-realtime')
     if(home && home.classList.contains('on')) loadInquiries();
   })
   .subscribe();
+
+// ══ 내 QR코드 (실제 QR 생성 + 다운로드) ══
+var CONSUMER_APP_URL = 'https://homestalk.vercel.app';
+var qrInstance = null;
+
+// QR에 담기는 주소. 소비자앱이 이 agent_id로 접수 건을 나에게 배정해요
+// (inquiries.agent_id는 기존 의뢰함 코드와 동일하게 로그인 유저 id를 사용)
+function qrTargetUrl(){
+  if(!currentSession) return '';
+  return CONSUMER_APP_URL + '?agent_id=' + encodeURIComponent(currentSession.user.id) + '&source=qr';
+}
+
+function qrFileName(){
+  var name = (currentAgent && currentAgent.office_name) ? currentAgent.office_name : '홈즈톡';
+  return name.replace(/[\\/:*?"<>|\s]/g, '_') + '_QR.png';
+}
+
+function renderQR(){
+  var canvas = document.getElementById('qr-canvas');
+  if(!canvas) return;
+
+  var label = document.getElementById('qr-office');
+  if(label) label.textContent = (currentAgent && currentAgent.office_name) ? currentAgent.office_name : '내 QR코드';
+
+  var url = qrTargetUrl();
+  if(!url){ showToast('로그인하면 QR코드가 만들어져요.', 1); return; }
+  if(typeof QRious === 'undefined'){ showToast('QR 라이브러리를 불러오지 못했어요.', 1); return; }
+
+  // 화면에는 CSS로 150px, 실제 캔버스는 600px로 그려서 인쇄·저장 화질을 확보
+  qrInstance = new QRious({
+    element: canvas,
+    value: url,
+    size: 600,
+    level: 'M',
+    padding: 16,
+    background: '#ffffff',
+    foreground: '#1A1A1A'
+  });
+}
+
+function downloadQR(){
+  var canvas = document.getElementById('qr-canvas');
+  if(!canvas || !qrInstance){ showToast('QR코드가 아직 준비되지 않았어요.', 1); return; }
+  try {
+    var a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = qrFileName();
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast('QR코드 이미지를 저장했어요!', 0);
+  } catch(e) {
+    showToast('저장에 실패했어요: ' + e.message, 1);
+  }
+}
+
+function copyQRLink(){
+  var url = qrTargetUrl();
+  if(!url){ showToast('로그인 후 이용할 수 있어요.', 1); return; }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(
+      function(){ showToast('접수 링크를 복사했어요!', 0); },
+      function(){ showToast('복사에 실패했어요.', 1); }
+    );
+  } else {
+    showToast('이 브라우저에서는 복사를 지원하지 않아요.', 1);
+  }
+}
 
 // ══ 프로필 (agents 테이블 연동) ══
 var currentAgent = null;                       // 로그인한 중개사의 agents 행
@@ -963,6 +1000,10 @@ async function loadAgentProfile(){
   currentAgent = r.data;
   fillProfileForm(currentAgent);
   fillHomeBar(currentAgent);
+
+  // QR 화면을 보고 있는 중이면 사무소명 라벨을 새로 채워요
+  var qrScreen = document.getElementById('s-qr');
+  if(qrScreen && qrScreen.classList.contains('on')) renderQR();
 }
 
 function fillProfileForm(a){
