@@ -917,12 +917,28 @@ async function countNewReqsByTab(){
   return counts;
 }
 
+// Phase 7: 이 배정 건이 "물건 정보가 바뀐 뒤 아직 확인 안 된" 상태인지 판단.
+// change_confirmed_at이 없으면 배정 시각(created_at)을 기준으로 삼음 — 배정 이후
+// 실제로 수정된 적이 있을 때만 "변경됨"으로 표시되고, 배정 전 옛 수정 때문에 새로 배정된
+// 건이 억울하게 "변경됨"으로 뜨는 일은 없음.
+function propertyChangeNeedsConfirm(row){
+  var p = row.properties;
+  if(!p) return false;
+  var updatedAt = new Date(p.updated_at || p.created_at).getTime();
+  var baseline = row.change_confirmed_at ? new Date(row.change_confirmed_at).getTime() : new Date(row.created_at).getTime();
+  return updatedAt > baseline;
+}
+
+var PA_FIELD_LABEL = { price:'가격', area_pyeong:'면적', phone:'연락처', message:'요청사항', inquiry_type:'거래유형', property_type:'물건유형' };
+
 function newReqCardHtml(row, tabIdx){
   var p = row.properties;
   var isQr = row.source === 'qr';
   var cardClass = isQr ? 'pu' : 'gold';
   var oneNBadge = '<span class="tag tag-wh" style="font-size:10px;">1:N</span>';
   var sourceBadge = '<span class="tag ' + (isQr ? 'tag-pu' : 'tag-g') + '" style="font-size:10px;">' + (PA_SOURCE_LABEL[row.source] || row.source || '') + '</span>';
+  var needsConfirm = propertyChangeNeedsConfirm(row);
+  var changeBadge = needsConfirm ? '<span class="tag tag-or" style="font-size:10px;">🔔 물건 변경됨</span>' : '';
   var title = escapeHtml(p.address || '') + (p.detail_address ? ' ' + escapeHtml(p.detail_address) : '');
   var tags = '<span class="tag tag-g">' + escapeHtml(p.inquiry_type || '') + '</span>'
     + '<span class="tag tag-gy">' + escapeHtml(p.property_type || '') + '</span>'
@@ -944,14 +960,67 @@ function newReqCardHtml(row, tabIdx){
     actions = phoneBtn + '<div class="act-btn outline" onclick="openAdUpload(\'' + row.id + '\')">광고등록</div>';
   }
 
+  // Phase 7: 물건 정보가 바뀌었는데 아직 확인 안 했으면 "변경사항 확인하기" 버튼 + 펼침 영역 추가
+  var changesRow = needsConfirm
+    ? '<div class="act-btns" style="margin-top:7px;"><div class="act-btn outline" style="border-color:var(--or);color:var(--or);" onclick="togglePropertyChanges(\'' + row.id + '\',\'' + row.property_id + '\')">🔔 변경사항 확인하기</div></div>'
+    : '';
+  var changesBlock = '<div id="pa-changes-' + row.id + '" style="display:none;margin-top:8px;"></div>';
+
   return '<div class="req-card ' + cardClass + '">'
-    + '<div class="req-hdr"><div style="display:flex;align-items:center;gap:6px;">' + oneNBadge + sourceBadge + '</div><span style="font-size:11px;color:var(--t3);">' + timeAgo(row.created_at) + '</span></div>'
+    + '<div class="req-hdr"><div style="display:flex;align-items:center;gap:6px;">' + oneNBadge + sourceBadge + changeBadge + '</div><span style="font-size:11px;color:var(--t3);">' + timeAgo(row.created_at) + '</span></div>'
     + '<div class="req-body">'
     + '<div style="font-size:15px;font-weight:700;margin-bottom:6px;">' + title + '</div>'
     + '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">' + tags + '</div>'
     + '<div class="act-btns">' + actions + '</div>'
     + adUpRow
+    + changesRow
+    + changesBlock
     + '</div></div>';
+}
+
+// 변경사항 펼침/접기 — 열 때마다 property_changes를 다시 조회해서 최신 내용을 보여줌
+async function togglePropertyChanges(paId, propertyId){
+  var el = document.getElementById('pa-changes-' + paId);
+  if(!el) return;
+  if(el.style.display === 'block'){ el.style.display = 'none'; return; }
+
+  el.style.display = 'block';
+  el.innerHTML = '<div style="font-size:12px;color:var(--t3);padding:8px 0;">불러오는 중...</div>';
+
+  var row = lastNewReqs.find(function(r){ return r.id === paId; });
+  var baseline = row && row.change_confirmed_at ? row.change_confirmed_at : (row ? row.created_at : null);
+
+  try {
+    var q = sb.from('property_changes').select('*').eq('property_id', propertyId).order('created_at', {ascending:false});
+    if(baseline) q = q.gt('created_at', baseline);
+    var result = await q;
+    if(result.error){
+      el.innerHTML = '<div style="font-size:12px;color:var(--rd);padding:8px 0;">불러오지 못했어요: ' + escapeHtml(result.error.message) + '</div>';
+      return;
+    }
+    var changes = result.data || [];
+    var listHtml = changes.length === 0
+      ? '<div style="font-size:12px;color:var(--t2);">세부 변경 내역은 없지만 물건 정보가 갱신됐어요.</div>'
+      : changes.map(function(c){
+          return '<div style="display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid rgba(0,0,0,.06);font-size:12px;">'
+            + '<span style="color:var(--t2);font-weight:600;flex-shrink:0;">' + (PA_FIELD_LABEL[c.field] || c.field) + '</span>'
+            + '<span style="color:var(--t3);text-align:right;">' + escapeHtml(c.old_value || '-') + ' → <strong style="color:var(--gd);">' + escapeHtml(c.new_value || '-') + '</strong></span>'
+            + '</div>';
+        }).join('');
+    el.innerHTML = '<div style="padding:10px 12px;background:var(--orb);border-radius:10px;">'
+      + listHtml
+      + '<button class="btn-gold" style="margin-top:10px;width:100%;padding:9px;font-size:12px;" onclick="confirmPropertyChange(\'' + paId + '\')">확인했습니다</button>'
+      + '</div>';
+  } catch(e){
+    el.innerHTML = '<div style="font-size:12px;color:var(--rd);padding:8px 0;">오류: ' + escapeHtml(e.message) + '</div>';
+  }
+}
+
+async function confirmPropertyChange(paId){
+  var r = await sb.from('property_agents').update({ change_confirmed_at: new Date().toISOString() }).eq('id', paId);
+  if(r.error){ showToast('확인 처리에 실패했어요: ' + r.error.message, 1); return; }
+  showToast('확인했어요!', 0);
+  loadInquiries();
 }
 
 // Phase 4 전용 상태 변경 함수 — 기존 acceptInquiry/completeInquiry(inquiries용)는 그대로 두고,
@@ -981,6 +1050,16 @@ async function completePropertyAgent(id){
 // property_agents 테이블 변경도 실시간 감지 (기존 inquiries 구독과 별개로 추가)
 sb.channel('property-agents-realtime')
   .on('postgres_changes', {event:'*', schema:'public', table:'property_agents'}, function(){
+    var home = document.getElementById('s-home');
+    if(home && home.classList.contains('on')) loadInquiries();
+  })
+  .subscribe();
+
+// Phase 7: 소비자가 물건을 수정하면 properties.updated_at이 바뀜.
+// 이 수정 자체는 property_agents를 건드리지 않으므로(위 채널로는 못 잡음),
+// properties 테이블도 별도로 구독해서 "물건 변경됨" 뱃지가 실시간으로 뜨게 함.
+sb.channel('properties-realtime')
+  .on('postgres_changes', {event:'*', schema:'public', table:'properties'}, function(){
     var home = document.getElementById('s-home');
     if(home && home.classList.contains('on')) loadInquiries();
   })
