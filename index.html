@@ -805,6 +805,10 @@ async function loadInquiries(){
 
   var result = await q;
 
+  // Phase 4: 새 구조(property_agents) 조회는 위 inquiries 조회와 완전히 별개로 병행.
+  // 실패해도(또는 0건이어도) 아래 inquiries 처리·화면에는 전혀 영향 없음.
+  var newRows = await loadNewInquiries();
+
   // 조회 자체가 실패하면(주로 RLS 권한) "의뢰 없음"이 아니라 오류를 그대로 보여줘요
   if(result.error){
     list.innerHTML = '';
@@ -820,14 +824,17 @@ async function loadInquiries(){
   if(currentReqTab === 0) rows = rows.filter(matchesNewTab);
   else if(currentReqTab === 1) rows = rows.filter(matchesQrTab);
 
-  if(rows.length === 0){
+  if(rows.length === 0 && newRows.length === 0){
     list.innerHTML = '';
     empty.style.display = 'block';
     empty.innerHTML = '<div style="font-size:32px;margin-bottom:10px;">📭</div>'
       + '<div style="font-size:13px;color:var(--t3);">표시할 의뢰가 없어요</div>';
   } else {
     empty.style.display = 'none';
-    list.innerHTML = rows.map(function(item){ return reqCardHtml(item, currentReqTab); }).join('');
+    // 기존 inquiries 카드 + Phase 4 property_agents 카드([1:N] 뱃지)를 이어붙여서 표시.
+    // property_agents가 0건이면 newRows도 항상 []이라 결과는 기존과 100% 동일함.
+    list.innerHTML = rows.map(function(item){ return reqCardHtml(item, currentReqTab); }).join('')
+      + newRows.map(function(row){ return newReqCardHtml(row, currentReqTab); }).join('');
   }
   updateReqBadges();
 }
@@ -838,14 +845,18 @@ async function updateReqBadges(){
   var b0 = document.getElementById('req-badge-0'), b1 = document.getElementById('req-badge-1');
 
   var r0 = await sb.from('inquiries').select('status,source').is('agent_id', null);
-  if(b0) b0.textContent = (r0.data || []).filter(matchesNewTab).length;
+  var legacyCount0 = (r0.data || []).filter(matchesNewTab).length;
 
-  var n1 = 0;
+  var legacyCount1 = 0;
   if(uid){
     var r1 = await sb.from('inquiries').select('status').eq('agent_id', uid).eq('source','qr');
-    n1 = (r1.data || []).filter(matchesQrTab).length;
+    legacyCount1 = (r1.data || []).filter(matchesQrTab).length;
   }
-  if(b1) b1.textContent = n1;
+
+  // Phase 4: 새 구조(property_agents) 건수를 기존 건수에 합산. 실패해도 기존 숫자는 그대로 유지됨.
+  var newCounts = await countNewReqsByTab();
+  if(b0) b0.textContent = legacyCount0 + newCounts[0];
+  if(b1) b1.textContent = legacyCount1 + newCounts[1];
 }
 
 // 수락하고 연락: 미배정 의뢰를 내 것으로 배정 + 진행중으로 전환
@@ -871,6 +882,140 @@ async function completeInquiry(id){
 // (Supabase 대시보드에서 inquiries 테이블 Realtime 복제가 켜져 있어야 동작해요)
 sb.channel('inquiries-realtime')
   .on('postgres_changes', {event:'*', schema:'public', table:'inquiries'}, function(){
+    var home = document.getElementById('s-home');
+    if(home && home.classList.contains('on')) loadInquiries();
+  })
+  .subscribe();
+
+// ══════════════════════════════════════════════════════════
+// Phase 4: 1:N 구조(property_agents) 병행 조회
+// 위 inquiries 조회/실시간 구독은 절대 건드리지 않고, 이 블록에서 새 구조를
+// "추가로" 조회해서 병합 표시만 함. 이 블록이 실패해도 위 의뢰함은 항상 정상 동작함.
+// ══════════════════════════════════════════════════════════
+
+var lastNewReqs = []; // 현재 탭에서 마지막으로 불러온 property_agents(+properties 조인) 목록
+var PA_SOURCE_LABEL = { app:'앱 등록', qr:'QR 접수', ai_matching:'AI 추천', direct_search:'상호 검색', map:'지도 선택', complex_search:'지역 검색' };
+
+// 탭 인덱스 → property_agents.status 조건 (QR/새 의뢰는 둘 다 'pending'이고 source로 구분)
+function newTabStatusFilter(tabIdx){
+  if(tabIdx === 2) return ['accepted', 'in_progress']; // 진행중
+  if(tabIdx === 3) return ['completed'];                // 완료
+  return ['pending'];                                   // 0=새 의뢰, 1=QR접수
+}
+
+// 나를 식별하는 두 값(agent_user_id=uid, agent_ref_id=agents.id) 중 하나라도 매칭되면 내 건.
+// 단, 현재 property_agents의 SELECT RLS는 agent_user_id만 검사하므로 agent_ref_id로만
+// 연결된(계정 없는 시절에 배정된) 건은 RLS 단계에서 이미 걸러져 이 OR절이 실제로는 못 봄 —
+// RLS가 agent_ref_id도 검사하도록 바뀌면 코드 수정 없이 자동으로 보이게 됨. (보고서 참고)
+function myPropertyAgentOrFilter(){
+  var uid = currentSession.user.id;
+  var refId = (currentAgent && currentAgent.id != null) ? currentAgent.id : null;
+  return 'agent_user_id.eq.' + uid + (refId != null ? ',agent_ref_id.eq.' + refId : '');
+}
+
+async function loadNewInquiries(){
+  lastNewReqs = [];
+  if(!currentSession) return lastNewReqs;
+
+  try {
+    var q = sb.from('property_agents')
+      .select('*, properties(*)')
+      .or(myPropertyAgentOrFilter())
+      .in('status', newTabStatusFilter(currentReqTab))
+      .order('created_at', {ascending:false});
+
+    if(currentReqTab === 0) q = q.neq('source', 'qr'); // 새 의뢰탭은 QR 제외(QR은 1번 탭에서 따로)
+    if(currentReqTab === 1) q = q.eq('source', 'qr');
+
+    var result = await q;
+    if(result.error){
+      console.warn('[Phase4] property_agents 조회 실패 (기존 의뢰함에는 영향 없음):', result.error.message);
+      return lastNewReqs;
+    }
+    // properties 조인이 비어있는 행(조인 실패/삭제된 물건)은 표시하지 않음
+    lastNewReqs = (result.data || []).filter(function(r){ return r.properties; });
+  } catch(e){
+    console.warn('[Phase4] 새 구조 조회 중 오류 (기존 의뢰함에는 영향 없음):', e.message);
+  }
+  return lastNewReqs;
+}
+
+// updateReqBadges()에서 합산할 새 구조 건수 (0=새 의뢰, 1=QR접수)
+async function countNewReqsByTab(){
+  var counts = [0, 0];
+  if(!currentSession) return counts;
+  try {
+    var result = await sb.from('property_agents').select('source').or(myPropertyAgentOrFilter()).eq('status', 'pending');
+    var rows = result.data || [];
+    counts[0] = rows.filter(function(r){ return r.source !== 'qr'; }).length;
+    counts[1] = rows.filter(function(r){ return r.source === 'qr'; }).length;
+  } catch(e){
+    console.warn('[Phase4] 새 구조 뱃지 집계 실패 (기존 뱃지 숫자는 유지됨):', e.message);
+  }
+  return counts;
+}
+
+function newReqCardHtml(row, tabIdx){
+  var p = row.properties;
+  var isQr = row.source === 'qr';
+  var cardClass = isQr ? 'pu' : 'gold';
+  var oneNBadge = '<span class="tag tag-wh" style="font-size:10px;">1:N</span>';
+  var sourceBadge = '<span class="tag ' + (isQr ? 'tag-pu' : 'tag-g') + '" style="font-size:10px;">' + (PA_SOURCE_LABEL[row.source] || row.source || '') + '</span>';
+  var title = escapeHtml(p.address || '') + (p.detail_address ? ' ' + escapeHtml(p.detail_address) : '');
+  var tags = '<span class="tag tag-g">' + escapeHtml(p.inquiry_type || '') + '</span>'
+    + '<span class="tag tag-gy">' + escapeHtml(p.property_type || '') + '</span>'
+    + (p.price ? '<span class="tag tag-gy">' + escapeHtml(p.price) + '</span>' : '');
+  var phoneBtn = p.phone
+    ? '<a class="act-btn outline" href="tel:' + escapeHtml(p.phone) + '" style="text-decoration:none;"><i class="ti ti-phone" style="font-size:13px;"></i> 전화</a>'
+    : '<div class="act-btn outline" style="opacity:.4;"><i class="ti ti-phone" style="font-size:13px;"></i> 전화</div>';
+
+  var actions;
+  if(tabIdx === 0 || tabIdx === 1){
+    actions = phoneBtn + '<div class="act-btn ' + (isQr ? 'pu' : 'gold') + '" onclick="acceptPropertyAgent(\'' + row.id + '\')">접수 확인</div>';
+  } else if(tabIdx === 2){
+    actions = phoneBtn
+      + (row.status === 'accepted' ? '<div class="act-btn gold" onclick="progressPropertyAgent(\'' + row.id + '\')">진행중으로 전환</div>' : '')
+      + '<div class="act-btn outline" onclick="completePropertyAgent(\'' + row.id + '\')">거래 완료 처리</div>';
+  } else {
+    actions = phoneBtn + '<div class="act-btn outline" onclick="go(\'s-adup\')">광고등록</div>';
+  }
+
+  return '<div class="req-card ' + cardClass + '">'
+    + '<div class="req-hdr"><div style="display:flex;align-items:center;gap:6px;">' + oneNBadge + sourceBadge + '</div><span style="font-size:11px;color:var(--t3);">' + timeAgo(row.created_at) + '</span></div>'
+    + '<div class="req-body">'
+    + '<div style="font-size:15px;font-weight:700;margin-bottom:6px;">' + title + '</div>'
+    + '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">' + tags + '</div>'
+    + '<div class="act-btns">' + actions + '</div>'
+    + '</div></div>';
+}
+
+// Phase 4 전용 상태 변경 함수 — 기존 acceptInquiry/completeInquiry(inquiries용)는 그대로 두고,
+// property_agents.status만 바꾸는 별도 함수. 실제 권한 통제는 DB RLS가 담당함.
+async function acceptPropertyAgent(id){
+  if(!currentSession) return;
+  var r = await sb.from('property_agents').update({status:'accepted'}).eq('id', id);
+  if(r.error){ alert('접수 확인 처리에 실패했어요: ' + r.error.message); return; }
+  alert('접수를 확인했어요!');
+  loadInquiries();
+}
+
+async function progressPropertyAgent(id){
+  if(!currentSession) return;
+  var r = await sb.from('property_agents').update({status:'in_progress'}).eq('id', id);
+  if(r.error){ alert('진행중 처리에 실패했어요: ' + r.error.message); return; }
+  loadInquiries();
+}
+
+async function completePropertyAgent(id){
+  if(!currentSession) return;
+  var r = await sb.from('property_agents').update({status:'completed'}).eq('id', id);
+  if(r.error){ alert('완료 처리에 실패했어요: ' + r.error.message); return; }
+  loadInquiries();
+}
+
+// property_agents 테이블 변경도 실시간 감지 (기존 inquiries 구독과 별개로 추가)
+sb.channel('property-agents-realtime')
+  .on('postgres_changes', {event:'*', schema:'public', table:'property_agents'}, function(){
     var home = document.getElementById('s-home');
     if(home && home.classList.contains('on')) loadInquiries();
   })
