@@ -1170,8 +1170,8 @@ async function deleteAdChannel(adId){
 var CONSUMER_APP_URL = 'https://homestalk.vercel.app';
 var qrInstance = null;
 
-// QR에 담기는 주소. 소비자앱이 이 agent_id로 접수 건을 나에게 배정해요
-// (inquiries.agent_id는 기존 의뢰함 코드와 동일하게 로그인 유저 id를 사용)
+// QR에 담기는 주소. 소비자앱이 이 agent_id(로그인 유저 id)로
+// property_agents.agent_user_id를 채워서 접수 건을 나에게 배정해요.
 function qrTargetUrl(){
   if(!currentSession) return '';
   return CONSUMER_APP_URL + '?agent_id=' + encodeURIComponent(currentSession.user.id) + '&source=qr';
