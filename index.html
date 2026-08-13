@@ -219,15 +219,15 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
       <div style="font-size:15px;font-weight:600;color:var(--tx);letter-spacing:-.02em;" id="home-name">중개사님</div>
       <div style="font-size:11px;color:var(--gd);display:flex;align-items:center;gap:4px;margin-top:3px;" id="home-cert"><i class="ti ti-circle-check" style="font-size:12px;"></i>홈즈톡 인증 회원</div>
     </div>
-    <div style="font-size:11px;padding:4px 11px;background:var(--gold);color:#fff;border-radius:100px;font-weight:600;">NEW 3</div>
+    <div id="home-new-badge" style="display:none;font-size:11px;padding:4px 11px;background:var(--gold);color:#fff;border-radius:100px;font-weight:600;">NEW</div>
   </div>
 
-  <!-- 통계 -->
+  <!-- 통계 (property_agents/ads 실데이터 — loadHomeStats()가 채움) -->
   <div class="stat-grid">
-    <div class="stat"><div class="stat-val" style="color:var(--gd);">8</div><div class="stat-label">이번달 의뢰</div></div>
-    <div class="stat"><div class="stat-val" style="color:var(--or);">3</div><div class="stat-label">대기 중</div></div>
-    <div class="stat"><div class="stat-val" style="color:var(--gn);">5</div><div class="stat-label">광고 진행</div></div>
-    <div class="stat"><div class="stat-val" style="color:var(--pu);">2</div><div class="stat-label">QR 접수</div></div>
+    <div class="stat"><div class="stat-val" id="stat-month" style="color:var(--gd);">-</div><div class="stat-label">이번달 의뢰</div></div>
+    <div class="stat"><div class="stat-val" id="stat-pending" style="color:var(--or);">-</div><div class="stat-label">대기 중</div></div>
+    <div class="stat"><div class="stat-val" id="stat-adprogress" style="color:var(--gn);">-</div><div class="stat-label">광고 진행</div></div>
+    <div class="stat"><div class="stat-val" id="stat-qr" style="color:var(--pu);">-</div><div class="stat-label">QR 접수</div></div>
   </div>
 
   <!-- 탭 -->
@@ -288,7 +288,7 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
 
   <!-- 공유 옵션 -->
   <div style="padding:0 18px 120px;display:flex;flex-direction:column;gap:10px;">
-    <div style="display:flex;align-items:center;gap:12px;padding:16px;background:var(--sf);border:1px solid var(--br);border-radius:14px;box-shadow:var(--sh);cursor:pointer;" onclick="alert('인쇄 설정이 열려요!')">
+    <div style="display:flex;align-items:center;gap:12px;padding:16px;background:var(--sf);border:1px solid var(--br);border-radius:14px;box-shadow:var(--sh);cursor:pointer;" onclick="showToast('사무실 프린트 출력은 준비 중이에요.', 0)">
       <i class="ti ti-printer" style="font-size:20px;color:var(--t2);"></i>
       <div style="flex:1;"><div style="font-size:14px;font-weight:500;">사무실 프린트 출력</div><div style="font-size:12px;color:var(--t3);margin-top:2px;">A4 / 명함 / 스티커</div></div>
       <i class="ti ti-chevron-right" style="font-size:16px;color:var(--t3);"></i>
@@ -348,7 +348,6 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
       <div style="font-size:12px;color:var(--t2);margin-top:3px;" id="prof-card-sub">프로필을 불러오는 중...</div>
       <div id="prof-card-cert" style="display:none;font-size:10px;padding:2px 9px;background:var(--gold);color:#fff;border-radius:8px;margin-top:5px;">홈즈톡 인증</div>
     </div>
-    <div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:var(--gd);">ISTJ</div><div style="font-size:10px;color:var(--gd);">MBTI</div></div>
   </div>
 
   <!-- 프로필 탭 -->
@@ -395,7 +394,8 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
       <div style="font-size:13px;color:var(--t2);margin-bottom:8px;">꼼꼼하고 신뢰할 수 있는 중개사 스타일</div>
       <div style="display:flex;gap:5px;flex-wrap:wrap;"><span class="tag tag-g">#꼼꼼한고객</span><span class="tag tag-g">#신중한결정</span><span class="tag tag-g">#체계적</span></div>
     </div>
-    <button class="btn-gold" onclick="alert('MBTI가 저장됐어요!')">MBTI 저장하기</button>
+    <button class="btn-gold" onclick="showToast('MBTI 저장 기능은 아직 준비 중이에요.', 1)">MBTI 저장하기</button>
+    <div class="ro-note" style="margin-top:10px;">MBTI는 아직 저장되지 않아요 (준비 중).</div>
   </div>
 
   <!-- 사주 탭 -->
@@ -414,7 +414,8 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
       <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;"><span style="color:var(--t2);">오행</span><span style="font-weight:600;color:var(--gd);">목(木) · 성장과 추진력</span></div>
       <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--t2);">잘 맞는 고객</span><span style="font-weight:600;color:var(--gd);">신중하고 꼼꼼한 스타일</span></div>
     </div>
-    <button class="btn-gold" onclick="alert('사주가 저장됐어요!')">사주 저장하기</button>
+    <button class="btn-gold" onclick="showToast('사주 저장 기능은 아직 준비 중이에요.', 1)">사주 저장하기</button>
+    <div class="ro-note" style="margin-top:10px;">사주는 아직 저장되지 않아요 (준비 중).</div>
   </div>
 
   <!-- 사진 탭 -->
@@ -427,9 +428,9 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
     <div class="photo-grid">
       <div class="photo-item filled" onclick="showToast('프로필 사진 업로드는 준비 중이에요. 지금은 기본 아이콘으로 보여요.',0)"><i class="ti ti-user-circle" style="font-size:30px;color:var(--gd);"></i><span style="font-size:11px;color:var(--gd);font-weight:500;">프로필 (기본)</span></div>
       <div class="photo-item empty" onclick="showToast('사무실 외관 사진 업로드는 준비 중이에요.',0)"><i class="ti ti-building-store" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">외관사진</span></div>
-      <div class="photo-item empty" onclick="alert('내부 사진을 업로드하세요')"><i class="ti ti-plus" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">내부사진</span></div>
-      <div class="photo-item empty" onclick="alert('자격증 사진을 업로드하세요')"><i class="ti ti-certificate" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">자격증</span></div>
-      <div class="photo-item empty" onclick="alert('매물 사진을 업로드하세요')"><i class="ti ti-home" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">매물사진</span></div>
+      <div class="photo-item empty" onclick="showToast('내부 사진 업로드는 준비 중이에요.', 0)"><i class="ti ti-plus" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">내부사진</span></div>
+      <div class="photo-item empty" onclick="showToast('자격증 사진 업로드는 준비 중이에요.', 0)"><i class="ti ti-certificate" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">자격증</span></div>
+      <div class="photo-item empty" onclick="showToast('매물 사진 업로드는 준비 중이에요.', 0)"><i class="ti ti-home" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">매물사진</span></div>
     </div>
   </div>
 
@@ -443,7 +444,8 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
     <input class="input" placeholder="https://blog.naver.com/..." style="margin-bottom:14px;">
     <div class="label"><i class="ti ti-brand-kakao" style="color:#F7E600;font-size:14px;"></i> 카카오 채널</div>
     <input class="input" placeholder="카카오 채널 링크" style="margin-bottom:16px;">
-    <button class="btn-gold" onclick="alert('SNS 정보가 저장됐어요!')">SNS 저장하기</button>
+    <button class="btn-gold" onclick="showToast('SNS 저장 기능은 아직 준비 중이에요.', 1)">SNS 저장하기</button>
+    <div class="ro-note" style="margin-top:10px;">SNS 링크는 아직 저장되지 않아요 (준비 중).</div>
   </div>
 
   <!-- 미리보기 탭 -->
@@ -510,7 +512,7 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
 
       <!-- MBTI + 사주 뱃지 -->
       <div style="padding:0 14px 10px;display:flex;gap:6px;flex-wrap:wrap;">
-        <div style="padding:8px 12px;background:var(--pub);border:.5px solid var(--pu);border-radius:10px;display:flex;align-items:center;gap:6px;"><i class="ti ti-brain" style="font-size:14px;color:var(--pu);"></i><div><div style="font-size:11px;font-weight:600;color:var(--pu);">MBTI · ISTJ</div><div style="font-size:10px;color:var(--t3);">꼼꼼하고 신뢰있는 스타일</div></div></div>
+        <div style="padding:8px 12px;background:rgba(0,0,0,.04);border:.5px dashed var(--br);border-radius:10px;display:flex;align-items:center;gap:6px;opacity:.5;"><i class="ti ti-brain" style="font-size:14px;color:var(--t3);"></i><div><div style="font-size:11px;font-weight:500;color:var(--t3);">MBTI 미등록</div><div style="font-size:10px;color:var(--t3);">등록 시 소비자에게 궁합 표시</div></div></div>
         <div style="padding:8px 12px;background:rgba(0,0,0,.04);border:.5px dashed var(--br);border-radius:10px;display:flex;align-items:center;gap:6px;opacity:.5;"><i class="ti ti-moon-stars" style="font-size:14px;color:var(--t3);"></i><div><div style="font-size:11px;font-weight:500;color:var(--t3);">사주 미등록</div><div style="font-size:10px;color:var(--t3);">등록 시 궁합 분석 가능</div></div></div>
       </div>
 
@@ -537,7 +539,8 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
 
       <!-- AI 궁합 보기 버튼 -->
       <div style="padding:0 14px 14px;">
-        <div style="padding:11px;border:.5px solid var(--gold);border-radius:11px;font-size:13px;color:var(--gold);text-align:center;background:var(--gl);">AI 궁합 상세 보기 (98%) →</div>
+        <div style="padding:11px;border:.5px solid var(--gold);border-radius:11px;font-size:13px;color:var(--gold);text-align:center;background:var(--gl);">AI 궁합 상세 보기 →</div>
+        <div style="font-size:10px;color:var(--t3);text-align:center;margin-top:4px;">궁합 점수는 소비자마다 다르게 계산돼요</div>
       </div>
     </div>
 
@@ -601,7 +604,7 @@ function go(id){
       if(oc.indexOf(id)>-1) ni.classList.add('on');
     });
   });
-  if(id==='s-home') loadInquiries();
+  if(id==='s-home'){ loadInquiries(); loadHomeStats(); }
   if(id==='s-profile') loadAgentProfile();
   if(id==='s-qr') renderQR();
   if(id==='s-adup') loadAdsForCurrentProperty();
@@ -737,11 +740,60 @@ async function updateReqBadges(){
   if(b1) b1.textContent = counts[1];
 }
 
+// 홈 화면 상단 통계 4칸 — 예전엔 "8/3/5/2"로 하드코딩돼 있던 자리를 실데이터로 채움.
+// 이번달 의뢰: 이번 달에 나에게 배정된 건수 / 대기 중: status='pending' / 광고 진행: 광고를
+// 1개 이상 등록한 배정 건수(ads 조인) / QR 접수: source='qr' 전체 건수.
+async function loadHomeStats(){
+  var elMonth = document.getElementById('stat-month');
+  var elPending = document.getElementById('stat-pending');
+  var elAd = document.getElementById('stat-adprogress');
+  var elQr = document.getElementById('stat-qr');
+  var newBadge = document.getElementById('home-new-badge');
+  if(!currentSession || !elMonth) return;
+
+  try {
+    var monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+    var mineFilter = myPropertyAgentOrFilter();
+
+    var allResult = await sb.from('property_agents').select('id, status, source, created_at').or(mineFilter);
+    if(allResult.error){
+      console.warn('[홈통계] property_agents 조회 실패:', allResult.error.message);
+      return;
+    }
+    var rows = allResult.data || [];
+
+    var monthCount = rows.filter(function(r){ return r.created_at >= monthStart; }).length;
+    var pendingCount = rows.filter(function(r){ return r.status === 'pending'; }).length;
+    var qrCount = rows.filter(function(r){ return r.source === 'qr'; }).length;
+
+    var adProgressCount = 0;
+    var ids = rows.map(function(r){ return r.id; });
+    if(ids.length > 0){
+      var adsResult = await sb.from('ads').select('property_agent_id').in('property_agent_id', ids);
+      if(!adsResult.error){
+        adProgressCount = new Set((adsResult.data || []).map(function(a){ return a.property_agent_id; })).size;
+      }
+    }
+
+    elMonth.textContent = monthCount;
+    elPending.textContent = pendingCount;
+    elAd.textContent = adProgressCount;
+    elQr.textContent = qrCount;
+
+    if(newBadge){
+      if(pendingCount > 0){ newBadge.textContent = 'NEW ' + pendingCount; newBadge.style.display = 'block'; }
+      else { newBadge.style.display = 'none'; }
+    }
+  } catch(e){
+    console.warn('[홈통계] 집계 중 오류:', e.message);
+  }
+}
+
 // property_agents 테이블 변경을 실시간으로 감지해서 의뢰함 자동 새로고침
 sb.channel('property-agents-realtime')
   .on('postgres_changes', {event:'*', schema:'public', table:'property_agents'}, function(){
     var home = document.getElementById('s-home');
-    if(home && home.classList.contains('on')) loadInquiries();
+    if(home && home.classList.contains('on')) { loadInquiries(); loadHomeStats(); }
   })
   .subscribe();
 
@@ -945,7 +997,7 @@ async function completePropertyAgent(id){
 sb.channel('properties-realtime')
   .on('postgres_changes', {event:'*', schema:'public', table:'properties'}, function(){
     var home = document.getElementById('s-home');
-    if(home && home.classList.contains('on')) loadInquiries();
+    if(home && home.classList.contains('on')) { loadInquiries(); loadHomeStats(); }
   })
   .subscribe();
 
