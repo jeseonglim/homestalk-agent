@@ -829,6 +829,18 @@ sb.channel('property-agents-realtime')
 var lastNewReqs = []; // 현재 탭에서 마지막으로 불러온 property_agents(+properties 조인) 목록
 var PA_SOURCE_LABEL = { app:'앱 등록', qr:'QR 접수', ai_matching:'AI 추천', direct_search:'상호 검색', map:'지도 선택', complex_search:'지역 검색' };
 
+// property_agents.id -> { channel: ads행 } — 의뢰함 카드의 미니 아이콘/체크리스트가 씀
+var adsByPropertyAgentId = {};
+// 채널 짧은 배지(원형 아이콘)용 — AD_CHANNELS(이모지 라벨, s-adup 탭용)와는 별도로,
+// 카드 미니 아이콘·체크리스트에서 쓸 한 글자 배지/색상만 따로 관리
+var CHANNEL_META = {
+  naver:   { label:'네이버', short:'N', color:'#03C75A' },
+  zigbang: { label:'직방',   short:'직', color:'#3B82F6' },
+  dabang:  { label:'다방',   short:'다', color:'#F59E0B' },
+  blog:    { label:'블로그', short:'B', color:'#03C75A' },
+  youtube: { label:'유튜브', short:'Y', color:'#FF0000' }
+};
+
 // 탭 인덱스 → property_agents.status 조건 (QR/새 의뢰는 둘 다 'pending'이고 source로 구분)
 function newTabStatusFilter(tabIdx){
   if(tabIdx === 2) return ['accepted', 'in_progress']; // 진행중
@@ -867,6 +879,22 @@ async function loadNewInquiries(){
     }
     // properties 조인이 비어있는 행(조인 실패/삭제된 물건)은 표시하지 않음
     lastNewReqs = (result.data || []).filter(function(r){ return r.properties; });
+
+    // 지금 화면에 뜨는 건들의 채널 등록 현황(ads)을 한 번에 불러와서
+    // 카드 미니 아이콘 + 상세 펼침 체크리스트에서 씀
+    adsByPropertyAgentId = {};
+    var ids = lastNewReqs.map(function(r){ return r.id; });
+    if(ids.length > 0){
+      var adsResult = await sb.from('ads').select('*').in('property_agent_id', ids);
+      if(adsResult.error){
+        console.warn('[채널현황] ads 조회 실패 (카드는 채널 정보 없이 표시됨):', adsResult.error.message);
+      } else {
+        (adsResult.data || []).forEach(function(a){
+          if(!adsByPropertyAgentId[a.property_agent_id]) adsByPropertyAgentId[a.property_agent_id] = {};
+          adsByPropertyAgentId[a.property_agent_id][a.channel] = a;
+        });
+      }
+    }
   } catch(e){
     console.warn('[Phase4] 새 구조 조회 중 오류 (기존 의뢰함에는 영향 없음):', e.message);
   }
@@ -936,16 +964,117 @@ function newReqCardHtml(row, tabIdx){
     : '';
   var changesBlock = '<div id="pa-changes-' + row.id + '" style="display:none;margin-top:8px;"></div>';
 
+  // 채널 등록 미니 아이콘 — 등록된 채널만 표시(없으면 이 줄 자체가 비어있음)
+  var channelStrip = '<div id="pa-channels-' + row.id + '" style="margin-bottom:8px;">' + channelIconStripHtml(row.id) + '</div>';
+
+  // 상세보기 펼침(요청사항/면적/접수일/채널 체크리스트) — 소비자 연락처는 이미 위 전화 버튼으로
+  // 바로 접근 가능하므로 여기 또 넣지 않음(중복 방지)
+  var detailToggle = '<div class="act-btns" style="margin-top:7px;"><div class="act-btn outline" onclick="toggleDetailPanel(\'' + row.id + '\')"><i class="ti ti-list-details" style="font-size:13px;"></i> 상세보기</div></div>';
+  var detailBlock = '<div id="pa-detail-' + row.id + '" style="display:none;"></div>';
+
   return '<div class="req-card ' + cardClass + '">'
     + '<div class="req-hdr"><div style="display:flex;align-items:center;gap:6px;">' + sourceBadge + changeBadge + '</div><span style="font-size:11px;color:var(--t3);">' + timeAgo(row.created_at) + '</span></div>'
     + '<div class="req-body">'
     + '<div style="font-size:15px;font-weight:700;margin-bottom:6px;">' + title + '</div>'
     + '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">' + tags + '</div>'
+    + channelStrip
     + '<div class="act-btns">' + actions + '</div>'
     + adUpRow
+    + detailToggle
+    + detailBlock
     + changesRow
     + changesBlock
     + '</div></div>';
+}
+
+// 카드에 상시 노출되는 채널 미니 아이콘 — 등록 안 된 채널은 아예 표시하지 않음
+function channelIconStripHtml(paId){
+  var byChannel = adsByPropertyAgentId[paId] || {};
+  var registered = AD_CHANNELS.filter(function(c){ return !!byChannel[c.id]; });
+  if(registered.length === 0) return '';
+  return registered.map(function(c){
+    var m = CHANNEL_META[c.id];
+    return '<span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:' + m.color + ';color:#fff;font-size:10px;font-weight:700;margin-right:4px;" title="' + m.label + ' 등록됨">' + m.short + '</span>';
+  }).join('');
+}
+
+// 상세보기 펼침/접기
+function toggleDetailPanel(paId){
+  var el = document.getElementById('pa-detail-' + paId);
+  if(!el) return;
+  var willOpen = el.style.display !== 'block';
+  el.style.display = willOpen ? 'block' : 'none';
+  if(willOpen){
+    el.innerHTML = detailPanelHtml(paId);
+    renderChannelChecklist(paId);
+  }
+}
+
+function detailPanelHtml(paId){
+  var row = lastNewReqs.find(function(r){ return r.id === paId; });
+  if(!row || !row.properties) return '';
+  var p = row.properties;
+  var dateStr = new Date(row.created_at).toLocaleString('ko-KR', {year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'});
+
+  var rows = '';
+  if(p.area_pyeong) rows += '<div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 0;"><span style="color:var(--t3);">면적</span><span style="color:var(--tx);font-weight:500;">' + escapeHtml(p.area_pyeong) + '평</span></div>';
+  rows += '<div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 0;"><span style="color:var(--t3);">접수일</span><span style="color:var(--tx);font-weight:500;">' + dateStr + '</span></div>';
+
+  var msgBlock = p.message
+    ? '<div style="font-size:12px;padding:8px 0 2px;border-top:.5px solid var(--br);margin-top:4px;"><span style="color:var(--t3);display:block;margin-bottom:4px;">요청사항</span><span style="color:var(--tx);line-height:1.6;">' + escapeHtml(p.message) + '</span></div>'
+    : '';
+
+  return '<div style="padding:12px 14px;background:rgba(0,0,0,.02);border-radius:12px;margin-top:8px;">'
+    + rows
+    + msgBlock
+    + '<div style="font-size:12px;font-weight:600;color:var(--t2);margin-top:10px;margin-bottom:2px;">광고 채널별 등록 현황</div>'
+    + '<div id="pa-channel-checklist-' + paId + '"></div>'
+    + '</div>';
+}
+
+// 상세 펼침 안의 채널 체크리스트 — 체크박스로 "등록했어요"만 빠르게 표시(URL/가격은 나중에 보충)
+function renderChannelChecklist(paId){
+  var el = document.getElementById('pa-channel-checklist-' + paId);
+  if(!el) return;
+  var byChannel = adsByPropertyAgentId[paId] || {};
+  el.innerHTML = AD_CHANNELS.map(function(c){
+    var has = !!byChannel[c.id];
+    var m = CHANNEL_META[c.id];
+    var name = c.label.replace(/^\S+\s/, '');
+    return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-top:.5px solid var(--br);font-size:12px;">'
+      + '<input type="checkbox" ' + (has ? 'checked' : '') + ' onchange="toggleQuickChannelCheck(\'' + paId + '\',\'' + c.id + '\')" style="width:16px;height:16px;accent-color:var(--gold);flex-shrink:0;">'
+      + '<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:' + m.color + ';color:#fff;font-size:9px;font-weight:700;flex-shrink:0;">' + m.short + '</span>'
+      + '<span style="flex:1;color:var(--tx);">' + name + '</span>'
+      + (has
+          ? '<span style="color:var(--gn);font-size:11px;font-weight:500;">✅ 등록됨</span>'
+          : '<span style="color:var(--gold);font-size:11px;font-weight:500;cursor:pointer;" onclick="openAdUpload(\'' + paId + '\')">등록하기 →</span>')
+      + '</div>';
+  }).join('');
+}
+
+// 체크박스 하나로 "일단 이 채널에 올렸어요"만 빠르게 기록 — channel만 채우고 나머지(URL/가격)는
+// 광고등록 화면(s-adup)에서 나중에 보충 가능. 체크 해제하면 그 행을 바로 삭제.
+async function toggleQuickChannelCheck(paId, channel){
+  if(!adsByPropertyAgentId[paId]) adsByPropertyAgentId[paId] = {};
+  var byChannel = adsByPropertyAgentId[paId];
+  var existing = byChannel[channel];
+
+  if(existing){
+    var del = await sb.from('ads').delete().eq('id', existing.id);
+    if(del.error){ showToast('삭제 실패: ' + del.error.message, 1); renderChannelChecklist(paId); return; }
+    delete byChannel[channel];
+  } else {
+    var ins = await sb.from('ads').insert({ property_agent_id: paId, channel: channel }).select().maybeSingle();
+    if(ins.error){ showToast('등록 실패: ' + ins.error.message, 1); renderChannelChecklist(paId); return; }
+    byChannel[channel] = ins.data;
+  }
+
+  renderChannelChecklist(paId);
+  var stripEl = document.getElementById('pa-channels-' + paId);
+  if(stripEl) stripEl.innerHTML = channelIconStripHtml(paId);
+
+  // 광고등록 화면(s-adup)이 지금 같은 물건을 보고 있으면 그쪽 화면도 최신 상태로 맞춤
+  if(currentAdPropertyAgentId === paId){ adsByChannel = byChannel; renderAdUpScreen(); }
 }
 
 // 변경사항 펼침/접기 — 열 때마다 property_changes를 다시 조회해서 최신 내용을 보여줌
