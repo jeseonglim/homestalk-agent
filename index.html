@@ -144,7 +144,7 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
 .mbti-btn:hover{border-color:var(--gold);color:var(--gd);}
 .mbti-btn.on{background:var(--gl);border-color:var(--gold);color:var(--gd);}
 .photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;}
-.photo-item{aspect-ratio:1;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:all var(--ease);}
+.photo-item{aspect-ratio:1;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:all var(--ease);overflow:hidden;}
 .photo-item.filled{border:1.5px solid var(--gold);background:var(--gl);}
 .photo-item.empty{border:1.5px dashed var(--br);background:var(--sf);}
 .photo-item.empty:hover{border-color:var(--gold);background:var(--gl);}
@@ -441,13 +441,16 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
       <div style="height:6px;background:var(--br);border-radius:3px;overflow:hidden;"><div style="height:100%;width:40%;background:var(--gold);border-radius:3px;"></div></div>
       <div style="font-size:11px;color:var(--t3);margin-top:5px;">사진을 더 등록하면 AI 매칭에서 우선 노출돼요</div>
     </div>
+    <input type="file" accept="image/*" capture="environment" id="profile-photo-input" style="display:none;" onchange="onProfilePhotoSelected(this)">
     <div class="photo-grid">
-      <div class="photo-item filled" onclick="showToast('프로필 사진 업로드는 준비 중이에요. 지금은 기본 아이콘으로 보여요.',0)"><i class="ti ti-user-circle" style="font-size:30px;color:var(--gd);"></i><span style="font-size:11px;color:var(--gd);font-weight:500;">프로필 (기본)</span></div>
+      <div class="photo-item filled" id="photo-item-profile" onclick="document.getElementById('profile-photo-input').click()"><i class="ti ti-user-circle" style="font-size:30px;color:var(--gd);"></i><span style="font-size:11px;color:var(--gd);font-weight:500;">프로필 사진</span></div>
       <div class="photo-item empty" onclick="showToast('사무실 외관 사진 업로드는 준비 중이에요.',0)"><i class="ti ti-building-store" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">외관사진</span></div>
       <div class="photo-item empty" onclick="showToast('내부 사진 업로드는 준비 중이에요.', 0)"><i class="ti ti-plus" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">내부사진</span></div>
       <div class="photo-item empty" onclick="showToast('자격증 사진 업로드는 준비 중이에요.', 0)"><i class="ti ti-certificate" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">자격증</span></div>
       <div class="photo-item empty" onclick="showToast('매물 사진 업로드는 준비 중이에요.', 0)"><i class="ti ti-home" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">매물사진</span></div>
     </div>
+    <div id="photo-upload-status" style="display:none;margin-top:10px;font-size:12px;padding:10px 12px;border-radius:10px;"></div>
+    <button id="photo-delete-btn" class="btn-outline" style="display:none;margin-top:10px;" onclick="deleteProfilePhoto()">사진 삭제</button>
   </div>
 
   <!-- SNS 탭 -->
@@ -1448,10 +1451,16 @@ function toggleSpec(el, idx){
   renderPreview();
 }
 
-// 프로필 사진은 아직 없어서 이름 앞 2글자 또는 기본 아이콘으로 표시
-function setAvatar(id, name, iconSize){
+// 프로필 사진이 있으면 실제 사진을, 없으면 이름 앞 2글자 또는 기본 아이콘을 표시
+function setAvatar(id, name, iconSize, photoUrl){
   var el = document.getElementById(id);
   if(!el) return;
+  if(photoUrl){
+    el.style.overflow = 'hidden';
+    el.innerHTML = '<img src="' + photoUrl + '" style="width:100%;height:100%;object-fit:cover;">';
+    return;
+  }
+  el.style.overflow = '';
   var n = String(name || '').trim().slice(0, 2);
   if(n){ el.textContent = n; }
   else { el.innerHTML = '<i class="ti ti-user" style="font-size:' + iconSize + 'px;"></i>'; }
@@ -1503,7 +1512,8 @@ function fillProfileForm(a){
     ? a.address + (a.career_years ? ' · 경력 ' + a.career_years + '년' : '')
     : (a.career_years ? '경력 ' + a.career_years + '년' : '기본정보를 채워주세요');
   if(cardCert) cardCert.style.display = a.certified ? 'inline-block' : 'none';
-  setAvatar('prof-av', a.office_name, 24);
+  setAvatar('prof-av', a.office_name, 24, a.profile_image_url);
+  renderPhotoTab();
 
   renderPreview();
 }
@@ -1515,7 +1525,98 @@ function fillHomeBar(a){
   if(c) c.innerHTML = a.certified
     ? '<i class="ti ti-circle-check" style="font-size:12px;"></i>홈즈톡 인증 회원'
     : '<i class="ti ti-circle-dashed" style="font-size:12px;"></i>인증 대기 회원';
-  setAvatar('home-av', a.office_name, 20);
+  setAvatar('home-av', a.office_name, 20, a.profile_image_url);
+}
+
+// 사진 탭의 "프로필 사진" 칸 — 사진 있으면 미리보기, 없으면 기본 아이콘
+function renderPhotoTab(){
+  var item = document.getElementById('photo-item-profile');
+  var delBtn = document.getElementById('photo-delete-btn');
+  if(!item) return;
+  var url = currentAgent && currentAgent.profile_image_url;
+  if(url){
+    item.innerHTML = '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover;">';
+    if(delBtn) delBtn.style.display = 'block';
+  } else {
+    item.innerHTML = '<i class="ti ti-user-circle" style="font-size:30px;color:var(--gd);"></i><span style="font-size:11px;color:var(--gd);font-weight:500;">프로필 사진</span>';
+    if(delBtn) delBtn.style.display = 'none';
+  }
+}
+
+function setPhotoStatus(msg, isError){
+  var el = document.getElementById('photo-upload-status');
+  if(!el) return;
+  el.style.display = 'block';
+  el.textContent = msg;
+  el.style.background = isError ? '#FEF2F2' : '#F0FDF4';
+  el.style.color = isError ? '#DC2626' : '#16A34A';
+  clearTimeout(el._t);
+  el._t = setTimeout(function(){ el.style.display = 'none'; }, 3200);
+}
+
+// 프로필 사진 선택 → 즉시 미리보기 → Storage(profiles 버킷)에 업로드 → agents.profile_image_url 저장
+async function onProfilePhotoSelected(input){
+  var file = input.files && input.files[0];
+  input.value = ''; // 같은 파일을 다시 골라도 change가 또 일어나도록 초기화
+  if(!file) return;
+  if(!currentSession || !currentAgent){ showToast('로그인 정보를 확인할 수 없어요.', 1); return; }
+  if(file.size > 5 * 1024 * 1024){ showToast('사진은 5MB 이하로 선택해주세요.', 1); return; }
+
+  var item = document.getElementById('photo-item-profile');
+  var reader = new FileReader();
+  reader.onload = function(e){
+    if(item) item.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;opacity:.55;">';
+  };
+  reader.readAsDataURL(file);
+
+  setPhotoStatus('업로드 중...', false);
+
+  try {
+    // 경로를 고정해서 재업로드 시 자동 덮어쓰기 — 단, URL 자체는 그대로라
+    // 브라우저 캐시가 옛 사진을 계속 보여줄 수 있어 ?v= 로 매번 새 URL을 만듦
+    var path = currentSession.user.id + '/photo.jpg';
+    var up = await sb.storage.from('profiles').upload(path, file, { upsert: true, contentType: file.type || 'image/jpeg' });
+    if(up.error){ setPhotoStatus('업로드 실패: ' + up.error.message, true); renderPhotoTab(); return; }
+
+    var pub = sb.storage.from('profiles').getPublicUrl(path);
+    var publicUrl = pub.data.publicUrl + '?v=' + Date.now();
+
+    var upd = await sb.from('agents').update({ profile_image_url: publicUrl }).eq('user_id', currentSession.user.id).select().maybeSingle();
+    if(upd.error){ setPhotoStatus('사진은 올라갔지만 저장에 실패했어요: ' + upd.error.message, true); renderPhotoTab(); return; }
+    if(!upd.data){ setPhotoStatus('저장 대상 중개사 정보를 찾지 못했어요.', true); renderPhotoTab(); return; }
+
+    currentAgent = upd.data;
+    setPhotoStatus('사진이 저장됐어요!', false);
+    renderPhotoTab();
+    fillHomeBar(currentAgent);
+    renderPreview();
+  } catch(e){
+    setPhotoStatus('업로드 중 오류가 발생했어요: ' + e.message, true);
+    renderPhotoTab();
+  }
+}
+
+async function deleteProfilePhoto(){
+  if(!currentSession || !currentAgent) return;
+  if(!confirm('프로필 사진을 삭제할까요?')) return;
+
+  setPhotoStatus('삭제 중...', false);
+  try {
+    var path = currentSession.user.id + '/photo.jpg';
+    var rm = await sb.storage.from('profiles').remove([path]);
+    if(rm.error){ setPhotoStatus('삭제 실패: ' + rm.error.message, true); return; }
+
+    var upd = await sb.from('agents').update({ profile_image_url: null }).eq('user_id', currentSession.user.id).select().maybeSingle();
+    if(upd.error){ setPhotoStatus('삭제는 됐지만 저장에 실패했어요: ' + upd.error.message, true); return; }
+
+    currentAgent = upd.data;
+    setPhotoStatus('사진을 삭제했어요.', false);
+    renderPhotoTab();
+    fillHomeBar(currentAgent);
+    renderPreview();
+  } catch(e){
+    setPhotoStatus('삭제 중 오류가 발생했어요: ' + e.message, true);
+  }
 }
 
 // 2) 프로필 저장 (수정 가능 항목만 업데이트)
@@ -1580,7 +1681,7 @@ function renderPreview(){
   set('pv-intro', intro || '소개글이 아직 없어요.');
   set('pv-address', address || '주소 정보 없음');
 
-  setAvatar('pv-av', office, 22);
+  setAvatar('pv-av', office, 22, a.profile_image_url);
 
   var cert = document.getElementById('pv-cert');
   if(cert) cert.style.display = a.certified ? 'block' : 'none';
