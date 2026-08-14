@@ -207,6 +207,17 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
   </div>
 </div>
 
+<!-- ══ 가입 승인 게이트 (미신청/검토중/반려/정지/오류 공용 화면) ══ -->
+<div class="screen" id="s-approval-gate">
+  <div class="login-hero">
+    <div class="login-icon" id="gate-icon">⏳</div>
+    <div style="font-size:20px;font-weight:700;color:var(--tx);margin-bottom:10px;" id="gate-title"></div>
+    <div style="font-size:14px;color:var(--t2);line-height:1.7;margin-bottom:10px;" id="gate-sub"></div>
+    <div id="gate-reason" style="display:none;margin:14px 0 6px;padding:12px 14px;background:#FEF2F2;border:1px solid #FCA5A5;border-radius:12px;font-size:13px;color:#DC2626;text-align:left;line-height:1.6;"></div>
+  </div>
+  <div style="padding:10px 26px 40px;display:flex;flex-direction:column;gap:10px;" id="gate-actions"></div>
+</div>
+
 <!-- ══ 의뢰함 (홈) ══ -->
 <div class="screen" id="s-home">
   <div class="hdr">
@@ -645,7 +656,8 @@ async function doLogin(){
   var r=await sb.auth.signInWithPassword({email:e,password:p});
   if(r.error){showMsg(r.error.message.includes('Invalid')?'이메일 또는 비밀번호가 틀렸어요.':r.error.message,1);return;}
   currentSession=r.data.session;
-  go('s-home');
+  // 화면 전환은 onAuthStateChange → checkApprovalAndEnter()가 승인 상태를
+  // 확인한 뒤 알맞은 화면으로 보내줌(여기서 바로 go('s-home')하지 않음)
 }
 
 async function doSignup(){
@@ -659,7 +671,9 @@ async function doSignup(){
   var r=await sb.auth.signUp({email:e,password:p,options:{data:{full_name:n,role:'agent',reg_number:reg}}});
   if(r.error){showMsg(r.error.message,1);return;}
   if(r.data.user&&!r.data.session) showMsg('인증 메일을 보냈어요!',0);
-  else if(r.data.session) go('s-home');
+  // r.data.session이 있으면 onAuthStateChange → checkApprovalAndEnter()가
+  // 알맞은 화면으로 보내줌(등록번호-agents 연결은 이 화면 가입으로는 되지
+  // 않으므로, 대개 "가입 신청 필요" 게이트로 안내됨)
 }
 
 function doLogout(){sb.auth.signOut().then(function(){sessionStorage.clear();window.location.href='/';});}
@@ -676,8 +690,7 @@ sb.auth.onAuthStateChange(function(event, session){
     if(window.location.search || window.location.hash.includes('access_token')){
       window.history.replaceState(null,'','/');
     }
-    go('s-home');
-    loadAgentProfile();
+    checkApprovalAndEnter();
   } else if(event==='INITIAL_SESSION' && !session && !isCallback){
     // 콜백이 아닌데 세션 없음 = 로그인 안 된 상태
     currentSession = null;
@@ -1293,6 +1306,90 @@ function copyQRLink(){
   } else {
     showToast('이 브라우저에서는 복사를 지원하지 않아요.', 1);
   }
+}
+
+// ══ 가입 승인 게이트 ══
+// agents.user_id 연결 여부(currentAgent) + agent_approvals.signup_status를
+// 확인해서, 승인된 계정만 s-home 이하 정상 기능으로 들여보낸다.
+var currentApproval = null;   // 로그인한 중개사의 agent_approvals 행 (없으면 null)
+
+async function checkApprovalAndEnter(){
+  await loadAgentProfile();
+
+  if(!currentAgent){
+    // agents.user_id가 연결된 적이 없는 계정 — agent_signup.html로 정식
+    // 가입 신청을 한 적이 없는 경우(예: 위 이메일 회원가입 폼으로만 계정을
+    // 만든 경우). agent_approvals 행 자체가 없으므로 '미신청'과 동일하게 처리.
+    renderGate('미신청', null);
+    return;
+  }
+
+  try {
+    var ap = await sb.from('agent_approvals').select('*').eq('agent_id', currentAgent.id).maybeSingle();
+    if(ap.error){
+      console.warn('[승인게이트] agent_approvals 조회 실패:', ap.error.message);
+      renderGate('error', null);
+      return;
+    }
+    currentApproval = ap.data || null;
+    var status = currentApproval ? currentApproval.signup_status : '미신청';
+
+    if(status === '승인'){
+      go('s-home');
+      loadAgentProfile();
+    } else {
+      renderGate(status, currentApproval);
+    }
+  } catch(e){
+    console.warn('[승인게이트] 확인 중 오류:', e.message);
+    renderGate('error', null);
+  }
+}
+
+// 상태별로 안내 문구/버튼을 채워서 공용 게이트 화면(s-approval-gate)을 보여줌
+function renderGate(state, approval){
+  var icon = document.getElementById('gate-icon');
+  var title = document.getElementById('gate-title');
+  var sub = document.getElementById('gate-sub');
+  var reasonBox = document.getElementById('gate-reason');
+  var actions = document.getElementById('gate-actions');
+  reasonBox.style.display = 'none';
+  reasonBox.textContent = '';
+
+  var signupLink = '<a class="btn-gold" style="display:block;text-align:center;text-decoration:none;box-sizing:border-box;" href="https://homestalk.vercel.app/agent_signup.html">';
+  var logoutBtn = '<button class="btn-outline" onclick="doLogout()">로그아웃</button>';
+
+  if(state === '검토중'){
+    icon.textContent = '⏳';
+    title.textContent = '가입 신청을 확인하고 있어요';
+    sub.innerHTML = '담당자가 등록번호와 사무소 정보를 확인한 뒤<br>승인 안내를 드릴게요. 조금만 기다려주세요.';
+    actions.innerHTML = logoutBtn;
+  } else if(state === '반려'){
+    icon.textContent = '😥';
+    title.textContent = '가입 신청이 반려됐어요';
+    sub.innerHTML = '아래 내용을 확인하신 뒤, 정보를 정리해서<br>다시 신청해주세요.';
+    if(approval && approval.rejection_reason){
+      reasonBox.textContent = '반려 사유: ' + approval.rejection_reason;
+      reasonBox.style.display = 'block';
+    }
+    actions.innerHTML = signupLink + '다시 신청하기 →</a>' + logoutBtn;
+  } else if(state === '정지'){
+    icon.textContent = '🚫';
+    title.textContent = '이용이 정지됐어요';
+    sub.innerHTML = '문의사항은 홈즈톡 운영팀으로<br>연락해주세요.';
+    actions.innerHTML = logoutBtn;
+  } else if(state === 'error'){
+    icon.textContent = '⚠️';
+    title.textContent = '가입 상태를 확인하지 못했어요';
+    sub.innerHTML = '네트워크 문제일 수 있어요.<br>다시 시도해주세요.';
+    actions.innerHTML = '<button class="btn-gold" onclick="checkApprovalAndEnter()">다시 확인</button>' + logoutBtn;
+  } else { // '미신청'
+    icon.textContent = '📝';
+    title.textContent = '아직 가입 신청을 하지 않으셨어요';
+    sub.innerHTML = '등록번호로 가입 신청을 완료하면<br>검토 후 승인 안내를 드릴게요.';
+    actions.innerHTML = signupLink + '가입 신청하러 가기 →</a>' + logoutBtn;
+  }
+  go('s-approval-gate');
 }
 
 // ══ 프로필 (agents 테이블 연동) ══
