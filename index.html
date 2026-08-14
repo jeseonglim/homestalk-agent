@@ -144,7 +144,9 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
 .mbti-btn:hover{border-color:var(--gold);color:var(--gd);}
 .mbti-btn.on{background:var(--gl);border-color:var(--gold);color:var(--gd);}
 .photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;}
-.photo-item{aspect-ratio:1;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:all var(--ease);overflow:hidden;}
+.photo-item{position:relative;aspect-ratio:1;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:all var(--ease);overflow:hidden;}
+.photo-del{position:absolute;top:5px;right:5px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;z-index:2;}
+.photo-del:hover{background:rgba(0,0,0,.75);}
 .photo-item.filled{border:1.5px solid var(--gold);background:var(--gl);}
 .photo-item.empty{border:1.5px dashed var(--br);background:var(--sf);}
 .photo-item.empty:hover{border-color:var(--gold);background:var(--gl);}
@@ -400,57 +402,64 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
   <div id="prof-MBTI" class="section pb" style="display:none;">
     <div style="padding:12px;background:var(--gl);border-radius:12px;margin-bottom:16px;font-size:13px;color:var(--gd);line-height:1.6;">MBTI를 등록하면 AI 매칭에서 나와 맞는 소비자에게 <strong>우선 추천</strong>됩니다.</div>
     <div class="mbti-grid">
-      <div class="mbti-item"><div class="mbti-label">에너지</div><div class="mbti-btns"><div class="mbti-btn">E</div><div class="mbti-btn on">I</div></div></div>
-      <div class="mbti-item"><div class="mbti-label">인식</div><div class="mbti-btns"><div class="mbti-btn on">S</div><div class="mbti-btn">N</div></div></div>
-      <div class="mbti-item"><div class="mbti-label">판단</div><div class="mbti-btns"><div class="mbti-btn on">T</div><div class="mbti-btn">F</div></div></div>
-      <div class="mbti-item"><div class="mbti-label">생활방식</div><div class="mbti-btns"><div class="mbti-btn on">J</div><div class="mbti-btn">P</div></div></div>
+      <div class="mbti-item"><div class="mbti-label">에너지</div><div class="mbti-btns"><div class="mbti-btn" onclick="toggleMbtiAxis(0,'E',this)">E</div><div class="mbti-btn on" onclick="toggleMbtiAxis(0,'I',this)">I</div></div></div>
+      <div class="mbti-item"><div class="mbti-label">인식</div><div class="mbti-btns"><div class="mbti-btn on" onclick="toggleMbtiAxis(1,'S',this)">S</div><div class="mbti-btn" onclick="toggleMbtiAxis(1,'N',this)">N</div></div></div>
+      <div class="mbti-item"><div class="mbti-label">판단</div><div class="mbti-btns"><div class="mbti-btn on" onclick="toggleMbtiAxis(2,'T',this)">T</div><div class="mbti-btn" onclick="toggleMbtiAxis(2,'F',this)">F</div></div></div>
+      <div class="mbti-item"><div class="mbti-label">생활방식</div><div class="mbti-btns"><div class="mbti-btn on" onclick="toggleMbtiAxis(3,'J',this)">J</div><div class="mbti-btn" onclick="toggleMbtiAxis(3,'P',this)">P</div></div></div>
     </div>
     <div style="padding:14px;background:var(--gl);border-radius:12px;margin-bottom:16px;">
-      <div style="font-size:20px;font-weight:700;color:var(--gd);margin-bottom:5px;">ISTJ</div>
-      <div style="font-size:13px;color:var(--t2);margin-bottom:8px;">꼼꼼하고 신뢰할 수 있는 중개사 스타일</div>
-      <div style="display:flex;gap:5px;flex-wrap:wrap;"><span class="tag tag-g">#꼼꼼한고객</span><span class="tag tag-g">#신중한결정</span><span class="tag tag-g">#체계적</span></div>
+      <div style="font-size:20px;font-weight:700;color:var(--gd);margin-bottom:5px;" id="mbti-preview-code">ISTJ</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:8px;" id="mbti-preview-desc">꼼꼼하고 신뢰할 수 있는 중개사 스타일</div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;" id="mbti-preview-tags"><span class="tag tag-g">#꼼꼼한고객</span><span class="tag tag-g">#신중한결정</span><span class="tag tag-g">#체계적</span></div>
     </div>
-    <button class="btn-gold" onclick="showToast('MBTI 저장 기능은 아직 준비 중이에요.', 1)">MBTI 저장하기</button>
-    <div class="ro-note" style="margin-top:10px;">MBTI는 아직 저장되지 않아요 (준비 중).</div>
+    <button class="btn-gold" onclick="saveMbti()">MBTI 저장하기</button>
   </div>
 
   <!-- 사주 탭 -->
   <div id="prof-사주" class="section pb" style="display:none;">
-    <div style="padding:12px;background:var(--gl);border-radius:12px;margin-bottom:16px;font-size:13px;color:var(--gd);line-height:1.6;">사주를 등록하면 소비자와의 <strong>오행 궁합</strong>을 자동으로 분석해드려요.</div>
+    <div style="padding:12px;background:var(--gl);border-radius:12px;margin-bottom:16px;font-size:13px;color:var(--gd);line-height:1.6;">사주를 등록하면 소비자와의 <strong>오행 궁합</strong>을 자동으로 분석해드려요. (참고용 재미 매칭이에요)</div>
     <div class="label">생년월일</div>
-    <div style="display:flex;gap:6px;margin-bottom:10px;"><div class="chip on">양력</div><div class="chip">음력</div></div>
+    <div style="display:flex;gap:6px;margin-bottom:10px;">
+      <div class="chip on" data-cal="양력" onclick="setSajuCalendar('양력',this)">양력</div>
+      <div class="chip" data-cal="음력" onclick="setSajuCalendar('음력',this)">음력</div>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
-      <div><div style="font-size:11px;color:var(--t2);margin-bottom:4px;">년도</div><input class="input" value="1980" style="text-align:center;"></div>
-      <div><div style="font-size:11px;color:var(--t2);margin-bottom:4px;">월</div><input class="input" value="05" style="text-align:center;"></div>
-      <div><div style="font-size:11px;color:var(--t2);margin-bottom:4px;">일</div><input class="input" value="09" style="text-align:center;"></div>
+      <div><div style="font-size:11px;color:var(--t2);margin-bottom:4px;">년도</div><input class="input" id="saju-year" type="number" inputmode="numeric" placeholder="1980" style="text-align:center;" oninput="renderSajuPreview()"></div>
+      <div><div style="font-size:11px;color:var(--t2);margin-bottom:4px;">월</div><input class="input" id="saju-month" type="number" min="1" max="12" inputmode="numeric" placeholder="05" style="text-align:center;"></div>
+      <div><div style="font-size:11px;color:var(--t2);margin-bottom:4px;">일</div><input class="input" id="saju-day" type="number" min="1" max="31" inputmode="numeric" placeholder="09" style="text-align:center;"></div>
     </div>
+    <div class="label">태어난 시간 (선택)</div>
+    <input class="input" id="saju-time" type="time" style="margin-bottom:12px;">
     <div class="label">성별</div>
-    <div style="display:flex;gap:6px;margin-bottom:16px;"><div class="chip on">남성</div><div class="chip">여성</div></div>
-    <div style="padding:14px;background:var(--gl);border-radius:12px;margin-bottom:16px;">
-      <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;"><span style="color:var(--t2);">오행</span><span style="font-weight:600;color:var(--gd);">목(木) · 성장과 추진력</span></div>
-      <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--t2);">잘 맞는 고객</span><span style="font-weight:600;color:var(--gd);">신중하고 꼼꼼한 스타일</span></div>
+    <div style="display:flex;gap:6px;margin-bottom:16px;">
+      <div class="chip on" data-gender="남성" onclick="setSajuGender('남성',this)">남성</div>
+      <div class="chip" data-gender="여성" onclick="setSajuGender('여성',this)">여성</div>
     </div>
-    <button class="btn-gold" onclick="showToast('사주 저장 기능은 아직 준비 중이에요.', 1)">사주 저장하기</button>
-    <div class="ro-note" style="margin-top:10px;">사주는 아직 저장되지 않아요 (준비 중).</div>
+    <div style="padding:14px;background:var(--gl);border-radius:12px;margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;"><span style="color:var(--t2);">띠</span><span style="font-weight:600;color:var(--gd);" id="saju-animal">-</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;"><span style="color:var(--t2);">오행</span><span style="font-weight:600;color:var(--gd);" id="saju-element">-</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--t2);">잘 맞는 고객</span><span style="font-weight:600;color:var(--gd);" id="saju-match">-</span></div>
+    </div>
+    <button class="btn-gold" onclick="saveSaju()">사주 저장하기</button>
   </div>
 
   <!-- 사진 탭 -->
   <div id="prof-사진" class="section pb" style="display:none;">
     <div style="margin-bottom:12px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-size:13px;font-weight:600;">프로필 완성도</span><span style="font-size:13px;font-weight:700;color:var(--gold);">40%</span></div>
-      <div style="height:6px;background:var(--br);border-radius:3px;overflow:hidden;"><div style="height:100%;width:40%;background:var(--gold);border-radius:3px;"></div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-size:13px;font-weight:600;">프로필 완성도</span><span style="font-size:13px;font-weight:700;color:var(--gold);" id="photo-completion-pct">0%</span></div>
+      <div style="height:6px;background:var(--br);border-radius:3px;overflow:hidden;"><div style="height:100%;width:0%;background:var(--gold);border-radius:3px;" id="photo-completion-bar"></div></div>
       <div style="font-size:11px;color:var(--t3);margin-top:5px;">사진을 더 등록하면 AI 매칭에서 우선 노출돼요</div>
     </div>
-    <input type="file" accept="image/*" capture="environment" id="profile-photo-input" style="display:none;" onchange="onProfilePhotoSelected(this)">
+    <input type="file" accept="image/*" capture="environment" id="photo-input" style="display:none;" onchange="onPhotoSelected(this)">
     <div class="photo-grid">
-      <div class="photo-item filled" id="photo-item-profile" onclick="document.getElementById('profile-photo-input').click()"><i class="ti ti-user-circle" style="font-size:30px;color:var(--gd);"></i><span style="font-size:11px;color:var(--gd);font-weight:500;">프로필 사진</span></div>
-      <div class="photo-item empty" onclick="showToast('사무실 외관 사진 업로드는 준비 중이에요.',0)"><i class="ti ti-building-store" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">외관사진</span></div>
-      <div class="photo-item empty" onclick="showToast('내부 사진 업로드는 준비 중이에요.', 0)"><i class="ti ti-plus" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">내부사진</span></div>
-      <div class="photo-item empty" onclick="showToast('자격증 사진 업로드는 준비 중이에요.', 0)"><i class="ti ti-certificate" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">자격증</span></div>
-      <div class="photo-item empty" onclick="showToast('매물 사진 업로드는 준비 중이에요.', 0)"><i class="ti ti-home" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">매물사진</span></div>
+      <div class="photo-item empty" id="photo-item-profile" onclick="triggerPhotoUpload('profile')"><i class="ti ti-user-circle" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">프로필 사진</span></div>
+      <div class="photo-item empty" id="photo-item-exterior" onclick="triggerPhotoUpload('exterior')"><i class="ti ti-building-store" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">외관사진</span></div>
+      <div class="photo-item empty" id="photo-item-interior" onclick="triggerPhotoUpload('interior')"><i class="ti ti-photo" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">내부사진</span></div>
+      <div class="photo-item empty" id="photo-item-certificate" onclick="triggerPhotoUpload('certificate')"><i class="ti ti-certificate" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">자격증</span></div>
+      <div class="photo-item empty" id="photo-item-listing" onclick="triggerPhotoUpload('listing')"><i class="ti ti-home" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">매물사진</span></div>
     </div>
+    <div class="ro-note" style="margin-top:8px;">사진을 누르면 바로 선택/촬영할 수 있어요. 이미 있는 사진 위에는 삭제(×) 버튼이 떠요.</div>
     <div id="photo-upload-status" style="display:none;margin-top:10px;font-size:12px;padding:10px 12px;border-radius:10px;"></div>
-    <button id="photo-delete-btn" class="btn-outline" style="display:none;margin-top:10px;" onclick="deleteProfilePhoto()">사진 삭제</button>
   </div>
 
   <!-- SNS 탭 -->
@@ -506,14 +515,8 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
         <div id="pv-cert" style="display:none;position:absolute;top:10px;right:10px;background:var(--gold);color:#fff;font-size:10px;padding:3px 8px;border-radius:8px;font-weight:600;">홈즈톡 인증</div>
       </div>
 
-      <!-- 사진 섬네일 -->
-      <div style="display:flex;gap:5px;padding:8px 12px;overflow-x:auto;border-bottom:.5px solid var(--br);">
-        <div style="width:54px;height:42px;border-radius:7px;background:var(--gl);border:1.5px solid var(--gold);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;">🏢</div>
-        <div style="width:54px;height:42px;border-radius:7px;background:rgba(0,0,0,.04);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;">😊</div>
-        <div style="width:54px;height:42px;border-radius:7px;background:rgba(0,0,0,.04);border:.5px dashed var(--br);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:.4;">+</div>
-        <div style="width:54px;height:42px;border-radius:7px;background:rgba(0,0,0,.04);border:.5px dashed var(--br);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:.4;">+</div>
-        <div style="width:54px;height:42px;border-radius:7px;background:rgba(0,0,0,.04);border:.5px dashed var(--br);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:.4;">+</div>
-      </div>
+      <!-- 사진 섬네일 (사진 탭에서 등록한 5종을 그대로 반영) -->
+      <div style="display:flex;gap:5px;padding:8px 12px;overflow-x:auto;border-bottom:.5px solid var(--br);" id="pv-photo-strip"></div>
 
       <!-- 이름 + 태그 -->
       <div style="padding:14px 14px 10px;">
@@ -530,10 +533,7 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
       </div>
 
       <!-- MBTI + 사주 뱃지 -->
-      <div style="padding:0 14px 10px;display:flex;gap:6px;flex-wrap:wrap;">
-        <div style="padding:8px 12px;background:rgba(0,0,0,.04);border:.5px dashed var(--br);border-radius:10px;display:flex;align-items:center;gap:6px;opacity:.5;"><i class="ti ti-brain" style="font-size:14px;color:var(--t3);"></i><div><div style="font-size:11px;font-weight:500;color:var(--t3);">MBTI 미등록</div><div style="font-size:10px;color:var(--t3);">등록 시 소비자에게 궁합 표시</div></div></div>
-        <div style="padding:8px 12px;background:rgba(0,0,0,.04);border:.5px dashed var(--br);border-radius:10px;display:flex;align-items:center;gap:6px;opacity:.5;"><i class="ti ti-moon-stars" style="font-size:14px;color:var(--t3);"></i><div><div style="font-size:11px;font-weight:500;color:var(--t3);">사주 미등록</div><div style="font-size:10px;color:var(--t3);">등록 시 궁합 분석 가능</div></div></div>
-      </div>
+      <div style="padding:0 14px 10px;display:flex;gap:6px;flex-wrap:wrap;" id="pv-mbti-saju"></div>
 
       <!-- SNS -->
       <div style="padding:0 14px 10px;border-top:.5px solid var(--br);padding-top:10px;">
@@ -1514,6 +1514,8 @@ function fillProfileForm(a){
   if(cardCert) cardCert.style.display = a.certified ? 'inline-block' : 'none';
   setAvatar('prof-av', a.office_name, 24, a.profile_image_url);
   renderPhotoTab();
+  applyMbtiFromAgent(a);
+  applySajuFromAgent(a);
 
   renderPreview();
 }
@@ -1528,19 +1530,47 @@ function fillHomeBar(a){
   setAvatar('home-av', a.office_name, 20, a.profile_image_url);
 }
 
-// 사진 탭의 "프로필 사진" 칸 — 사진 있으면 미리보기, 없으면 기본 아이콘
+// ══ 사진 5종 (슬롯 하나 = agents 컬럼 하나 + Storage 고정 경로 하나) ══
+var PHOTO_SLOTS = {
+  profile:     { col: 'profile_image_url',    file: 'photo.jpg',       label: '프로필 사진', icon: 'ti-user-circle' },
+  exterior:    { col: 'exterior_image_url',    file: 'exterior.jpg',    label: '외관사진',    icon: 'ti-building-store' },
+  interior:    { col: 'interior_image_url',    file: 'interior.jpg',    label: '내부사진',    icon: 'ti-photo' },
+  certificate: { col: 'certificate_image_url', file: 'certificate.jpg', label: '자격증',      icon: 'ti-certificate' },
+  listing:     { col: 'listing_image_url',     file: 'listing.jpg',     label: '매물사진',    icon: 'ti-home' }
+};
+var pendingPhotoSlot = null;
+
+function triggerPhotoUpload(slot){
+  pendingPhotoSlot = slot;
+  document.getElementById('photo-input').click();
+}
+
+// 사진 탭의 5칸 — 사진 있으면 미리보기+삭제(×) 뱃지, 없으면 기본 아이콘
 function renderPhotoTab(){
-  var item = document.getElementById('photo-item-profile');
-  var delBtn = document.getElementById('photo-delete-btn');
-  if(!item) return;
-  var url = currentAgent && currentAgent.profile_image_url;
-  if(url){
-    item.innerHTML = '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover;">';
-    if(delBtn) delBtn.style.display = 'block';
-  } else {
-    item.innerHTML = '<i class="ti ti-user-circle" style="font-size:30px;color:var(--gd);"></i><span style="font-size:11px;color:var(--gd);font-weight:500;">프로필 사진</span>';
-    if(delBtn) delBtn.style.display = 'none';
-  }
+  var a = currentAgent || {};
+  var filledCount = 0;
+  Object.keys(PHOTO_SLOTS).forEach(function(slot){
+    var cfg = PHOTO_SLOTS[slot];
+    var item = document.getElementById('photo-item-' + slot);
+    if(!item) return;
+    var url = a[cfg.col];
+    if(url){
+      filledCount++;
+      item.className = 'photo-item filled';
+      item.innerHTML = '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover;">'
+        + '<span class="photo-del" onclick="event.stopPropagation();deletePhoto(\'' + slot + '\')"><i class="ti ti-x"></i></span>';
+    } else {
+      item.className = 'photo-item empty';
+      item.innerHTML = '<i class="ti ' + cfg.icon + '" style="font-size:22px;color:var(--t3);"></i><span style="font-size:11px;color:var(--t3);">' + cfg.label + '</span>';
+    }
+  });
+
+  var total = Object.keys(PHOTO_SLOTS).length;
+  var pct = Math.round(filledCount / total * 100);
+  var pctEl = document.getElementById('photo-completion-pct');
+  var barEl = document.getElementById('photo-completion-bar');
+  if(pctEl) pctEl.textContent = pct + '%';
+  if(barEl) barEl.style.width = pct + '%';
 }
 
 function setPhotoStatus(msg, isError){
@@ -1554,41 +1584,47 @@ function setPhotoStatus(msg, isError){
   el._t = setTimeout(function(){ el.style.display = 'none'; }, 3200);
 }
 
-// 프로필 사진 선택 → 즉시 미리보기 → Storage(profiles 버킷)에 업로드 → agents.profile_image_url 저장
-async function onProfilePhotoSelected(input){
+// 사진 선택 → 즉시 미리보기 → Storage(profiles 버킷)에 업로드 → agents 해당 컬럼에 저장
+async function onPhotoSelected(input){
   var file = input.files && input.files[0];
   input.value = ''; // 같은 파일을 다시 골라도 change가 또 일어나도록 초기화
-  if(!file) return;
+  var slot = pendingPhotoSlot;
+  pendingPhotoSlot = null;
+  if(!file || !slot) return;
   if(!currentSession || !currentAgent){ showToast('로그인 정보를 확인할 수 없어요.', 1); return; }
   if(file.size > 5 * 1024 * 1024){ showToast('사진은 5MB 이하로 선택해주세요.', 1); return; }
 
-  var item = document.getElementById('photo-item-profile');
+  var cfg = PHOTO_SLOTS[slot];
+  var item = document.getElementById('photo-item-' + slot);
   var reader = new FileReader();
   reader.onload = function(e){
     if(item) item.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;opacity:.55;">';
   };
   reader.readAsDataURL(file);
 
-  setPhotoStatus('업로드 중...', false);
+  setPhotoStatus(cfg.label + ' 업로드 중...', false);
 
   try {
-    // 경로를 고정해서 재업로드 시 자동 덮어쓰기 — 단, URL 자체는 그대로라
-    // 브라우저 캐시가 옛 사진을 계속 보여줄 수 있어 ?v= 로 매번 새 URL을 만듦
-    var path = currentSession.user.id + '/photo.jpg';
+    // 경로를 슬롯마다 고정해서 재업로드 시 자동 덮어쓰기 — 단, URL 자체는
+    // 그대로라 브라우저 캐시가 옛 사진을 계속 보여줄 수 있어 ?v= 로 매번
+    // 새 URL을 만듦
+    var path = currentSession.user.id + '/' + cfg.file;
     var up = await sb.storage.from('profiles').upload(path, file, { upsert: true, contentType: file.type || 'image/jpeg' });
-    if(up.error){ setPhotoStatus('업로드 실패: ' + up.error.message, true); renderPhotoTab(); return; }
+    if(up.error){ setPhotoStatus(cfg.label + ' 업로드 실패: ' + up.error.message, true); renderPhotoTab(); return; }
 
     var pub = sb.storage.from('profiles').getPublicUrl(path);
     var publicUrl = pub.data.publicUrl + '?v=' + Date.now();
 
-    var upd = await sb.from('agents').update({ profile_image_url: publicUrl }).eq('user_id', currentSession.user.id).select().maybeSingle();
-    if(upd.error){ setPhotoStatus('사진은 올라갔지만 저장에 실패했어요: ' + upd.error.message, true); renderPhotoTab(); return; }
+    var payload = {};
+    payload[cfg.col] = publicUrl;
+    var upd = await sb.from('agents').update(payload).eq('user_id', currentSession.user.id).select().maybeSingle();
+    if(upd.error){ setPhotoStatus(cfg.label + '은 올라갔지만 저장에 실패했어요: ' + upd.error.message, true); renderPhotoTab(); return; }
     if(!upd.data){ setPhotoStatus('저장 대상 중개사 정보를 찾지 못했어요.', true); renderPhotoTab(); return; }
 
     currentAgent = upd.data;
-    setPhotoStatus('사진이 저장됐어요!', false);
+    setPhotoStatus(cfg.label + '이 저장됐어요!', false);
     renderPhotoTab();
-    fillHomeBar(currentAgent);
+    if(slot === 'profile') fillHomeBar(currentAgent);
     renderPreview();
   } catch(e){
     setPhotoStatus('업로드 중 오류가 발생했어요: ' + e.message, true);
@@ -1596,27 +1632,204 @@ async function onProfilePhotoSelected(input){
   }
 }
 
-async function deleteProfilePhoto(){
-  if(!currentSession || !currentAgent) return;
-  if(!confirm('프로필 사진을 삭제할까요?')) return;
+async function deletePhoto(slot){
+  var cfg = PHOTO_SLOTS[slot];
+  if(!cfg || !currentSession || !currentAgent) return;
+  if(!confirm(cfg.label + '을 삭제할까요?')) return;
 
   setPhotoStatus('삭제 중...', false);
   try {
-    var path = currentSession.user.id + '/photo.jpg';
+    var path = currentSession.user.id + '/' + cfg.file;
     var rm = await sb.storage.from('profiles').remove([path]);
     if(rm.error){ setPhotoStatus('삭제 실패: ' + rm.error.message, true); return; }
 
-    var upd = await sb.from('agents').update({ profile_image_url: null }).eq('user_id', currentSession.user.id).select().maybeSingle();
+    var payload = {};
+    payload[cfg.col] = null;
+    var upd = await sb.from('agents').update(payload).eq('user_id', currentSession.user.id).select().maybeSingle();
     if(upd.error){ setPhotoStatus('삭제는 됐지만 저장에 실패했어요: ' + upd.error.message, true); return; }
 
     currentAgent = upd.data;
-    setPhotoStatus('사진을 삭제했어요.', false);
+    setPhotoStatus(cfg.label + '을 삭제했어요.', false);
     renderPhotoTab();
-    fillHomeBar(currentAgent);
+    if(slot === 'profile') fillHomeBar(currentAgent);
     renderPreview();
   } catch(e){
     setPhotoStatus('삭제 중 오류가 발생했어요: ' + e.message, true);
   }
+}
+
+// ══ MBTI ══
+var MBTI_AXES = [ {a:'E', b:'I'}, {a:'S', b:'N'}, {a:'T', b:'F'}, {a:'J', b:'P'} ];
+var MBTI_INFO = {
+  ISTJ:{desc:'꼼꼼하고 신뢰할 수 있는 중개사 스타일', tags:['꼼꼼한고객','신중한결정','체계적']},
+  ISFJ:{desc:'배려심 많고 세심하게 챙겨주는 스타일', tags:['편안한상담','세심한안내','신뢰']},
+  INFJ:{desc:'통찰력 있고 진솔하게 상담하는 스타일', tags:['진솔한상담','깊은신뢰','통찰']},
+  INTJ:{desc:'전략적이고 분석적인 전문가 스타일',   tags:['전문성','분석적','효율적']},
+  ISTP:{desc:'실용적이고 군더더기 없이 처리하는 스타일', tags:['실용적','빠른처리','군더더기없음']},
+  ISFP:{desc:'편안하고 부드럽게 안내하는 스타일',   tags:['편안한분위기','부드러운상담','배려']},
+  INFP:{desc:'따뜻하고 진심으로 소통하는 스타일',   tags:['진심상담','따뜻함','공감']},
+  INTP:{desc:'꼼꼼히 분석하고 정보를 잘 짚어주는 스타일', tags:['분석적','정보제공','논리적']},
+  ESTP:{desc:'적극적이고 발빠르게 움직이는 스타일', tags:['발빠른대응','적극적','실행력']},
+  ESFP:{desc:'밝고 친근하게 다가가는 스타일',       tags:['친근함','활발함','편안한소통']},
+  ENFP:{desc:'열정적이고 다양한 제안을 해주는 스타일', tags:['열정적','다양한제안','친근함']},
+  ENTP:{desc:'창의적이고 새로운 아이디어를 주는 스타일', tags:['창의적','새로운제안','도전적']},
+  ESTJ:{desc:'추진력 있고 확실하게 일 처리하는 스타일', tags:['추진력','확실한처리','체계적']},
+  ESFJ:{desc:'친절하면서 꼼꼼하게 챙기는 스타일',   tags:['친절함','꼼꼼함','배려']},
+  ENFJ:{desc:'믿음직하게 이끌어주는 리더십 스타일', tags:['리더십','신뢰감','공감능력']},
+  ENTJ:{desc:'결단력 있고 노련하게 이끄는 스타일',   tags:['결단력','노련함','추진력']}
+};
+var selectedMbti = ['I','S','T','J']; // 화면 기본 표시값(저장 전)
+
+function toggleMbtiAxis(axisIdx, value, el){
+  selectedMbti[axisIdx] = value;
+  var btns = el.parentElement.querySelectorAll('.mbti-btn');
+  btns.forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on');
+  renderMbtiPreview();
+}
+
+function renderMbtiPreview(){
+  var code = selectedMbti.join('');
+  var info = MBTI_INFO[code] || { desc:'', tags:[] };
+  var codeEl = document.getElementById('mbti-preview-code');
+  var descEl = document.getElementById('mbti-preview-desc');
+  var tagsEl = document.getElementById('mbti-preview-tags');
+  if(codeEl) codeEl.textContent = code;
+  if(descEl) descEl.textContent = info.desc;
+  if(tagsEl) tagsEl.innerHTML = info.tags.map(function(t){ return '<span class="tag tag-g">#' + escapeHtml(t) + '</span>'; }).join('');
+}
+
+function applyMbtiFromAgent(a){
+  var code = String(a.mbti || '').toUpperCase();
+  selectedMbti = (code.length === 4 && MBTI_INFO[code]) ? code.split('') : ['I','S','T','J'];
+
+  document.querySelectorAll('#prof-MBTI .mbti-item').forEach(function(item, idx){
+    var letters = [MBTI_AXES[idx].a, MBTI_AXES[idx].b];
+    var btns = item.querySelectorAll('.mbti-btn');
+    btns.forEach(function(btn, i){
+      btn.classList.toggle('on', letters[i] === selectedMbti[idx]);
+    });
+  });
+  renderMbtiPreview();
+}
+
+async function saveMbti(){
+  if(!currentSession || !currentAgent){ showToast('로그인 정보를 확인할 수 없어요.', 1); return; }
+  var code = selectedMbti.join('');
+  var upd = await sb.from('agents').update({ mbti: code }).eq('user_id', currentSession.user.id).select().maybeSingle();
+  if(upd.error){ showToast('MBTI 저장 실패: ' + upd.error.message, 1); return; }
+  currentAgent = upd.data;
+  showToast('MBTI가 저장됐어요!', 0);
+  renderPreview();
+}
+
+// ══ 사주 (참고용 재미 매칭 — 소비자앱 AI매칭과 같은 계산 방식) ══
+var SAJU_ANIMALS = ['쥐','소','호랑이','토끼','용','뱀','말','양','원숭이','닭','개','돼지'];
+var SAJU_ELEMENTS = ['목','목','화','화','토','토','금','금','수','수'];
+var SAJU_ELEMENT_INFO = {
+  '목': { hanja:'木', desc:'성장과 추진력',  match:'신중하고 꼼꼼한 스타일' },
+  '화': { hanja:'火', desc:'열정과 표현력',  match:'적극적이고 활발한 스타일' },
+  '토': { hanja:'土', desc:'안정과 신뢰',    match:'차분하고 안정을 추구하는 스타일' },
+  '금': { hanja:'金', desc:'결단과 원칙',    match:'확실하고 원칙을 중시하는 스타일' },
+  '수': { hanja:'水', desc:'지혜와 유연함',  match:'유연하고 다양한 의견을 여는 스타일' }
+};
+var sajuCalendar = '양력';
+var sajuGender = '남성';
+
+function calcSaju(year){
+  var y = parseInt(year, 10);
+  if(!y || y < 1900 || y > 2026) return null;
+  var animalIdx = ((y - 2020) % 12 + 12) % 12;
+  var stemIdx = ((y - 4) % 10 + 10) % 10;
+  var element = SAJU_ELEMENTS[stemIdx];
+  return { animal: SAJU_ANIMALS[animalIdx], element: element, elementInfo: SAJU_ELEMENT_INFO[element] };
+}
+
+function setSajuCalendar(val, el){
+  sajuCalendar = val;
+  el.parentElement.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('on'); });
+  el.classList.add('on');
+}
+function setSajuGender(val, el){
+  sajuGender = val;
+  el.parentElement.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('on'); });
+  el.classList.add('on');
+}
+
+function renderSajuPreview(){
+  var year = document.getElementById('saju-year').value;
+  var result = calcSaju(year);
+  var animalEl = document.getElementById('saju-animal');
+  var elementEl = document.getElementById('saju-element');
+  var matchEl = document.getElementById('saju-match');
+  if(!result){
+    if(animalEl) animalEl.textContent = '-';
+    if(elementEl) elementEl.textContent = '-';
+    if(matchEl) matchEl.textContent = '-';
+    return;
+  }
+  if(animalEl) animalEl.textContent = result.animal + '띠';
+  if(elementEl) elementEl.textContent = result.element + '(' + result.elementInfo.hanja + ') · ' + result.elementInfo.desc;
+  if(matchEl) matchEl.textContent = result.elementInfo.match;
+}
+
+function applySajuFromAgent(a){
+  sajuCalendar = a.birth_calendar || '양력';
+  sajuGender = a.gender || '남성';
+
+  var yearEl = document.getElementById('saju-year');
+  var monthEl = document.getElementById('saju-month');
+  var dayEl = document.getElementById('saju-day');
+  var timeEl = document.getElementById('saju-time');
+
+  if(a.birth_date){
+    var parts = String(a.birth_date).split('-'); // 'YYYY-MM-DD'
+    if(yearEl) yearEl.value = parts[0] || '';
+    if(monthEl) monthEl.value = parts[1] ? String(parseInt(parts[1], 10)) : '';
+    if(dayEl) dayEl.value = parts[2] ? String(parseInt(parts[2], 10)) : '';
+  } else {
+    if(yearEl) yearEl.value = '';
+    if(monthEl) monthEl.value = '';
+    if(dayEl) dayEl.value = '';
+  }
+  if(timeEl) timeEl.value = a.birth_time ? String(a.birth_time).slice(0, 5) : '';
+
+  document.querySelectorAll('#prof-사주 .chip').forEach(function(c){ c.classList.remove('on'); });
+  var calBtn = document.querySelector('#prof-사주 .chip[data-cal="' + sajuCalendar + '"]');
+  if(calBtn) calBtn.classList.add('on');
+  var genderBtn = document.querySelector('#prof-사주 .chip[data-gender="' + sajuGender + '"]');
+  if(genderBtn) genderBtn.classList.add('on');
+
+  renderSajuPreview();
+}
+
+async function saveSaju(){
+  if(!currentSession || !currentAgent){ showToast('로그인 정보를 확인할 수 없어요.', 1); return; }
+
+  var yearRaw = document.getElementById('saju-year').value.trim();
+  var monthRaw = document.getElementById('saju-month').value.trim();
+  var dayRaw = document.getElementById('saju-day').value.trim();
+  var time = document.getElementById('saju-time').value;
+
+  if(!yearRaw || !monthRaw || !dayRaw){ showToast('생년월일을 모두 입력해주세요.', 1); return; }
+  var y = parseInt(yearRaw, 10), m = parseInt(monthRaw, 10), d = parseInt(dayRaw, 10);
+  if(!y || y < 1900 || y > 2026 || m < 1 || m > 12 || d < 1 || d > 31){ showToast('생년월일을 다시 확인해주세요.', 1); return; }
+
+  var mm = (m < 10 ? '0' : '') + m;
+  var dd = (d < 10 ? '0' : '') + d;
+
+  var payload = {
+    birth_date: y + '-' + mm + '-' + dd,
+    birth_time: time || null,
+    birth_calendar: sajuCalendar,
+    gender: sajuGender
+  };
+
+  var upd = await sb.from('agents').update(payload).eq('user_id', currentSession.user.id).select().maybeSingle();
+  if(upd.error){ showToast('사주 저장 실패: ' + upd.error.message, 1); return; }
+  currentAgent = upd.data;
+  showToast('사주 정보가 저장됐어요!', 0);
+  renderPreview();
 }
 
 // 2) 프로필 저장 (수정 가능 항목만 업데이트)
@@ -1698,13 +1911,55 @@ function renderPreview(){
   var pvPhone = document.getElementById('pv-phone');
   if(pvPhone) pvPhone.style.opacity = phone ? '1' : '.4';
 
+  // 사진 섬네일 스트립 — 사진 탭에서 등록한 5종을 그대로 반영
+  var stripEl = document.getElementById('pv-photo-strip');
+  if(stripEl){
+    stripEl.innerHTML = Object.keys(PHOTO_SLOTS).map(function(slot){
+      var url = a[PHOTO_SLOTS[slot].col];
+      return url
+        ? '<img src="' + url + '" style="width:54px;height:42px;border-radius:7px;object-fit:cover;flex-shrink:0;border:1.5px solid var(--gold);">'
+        : '<div style="width:54px;height:42px;border-radius:7px;background:rgba(0,0,0,.04);border:.5px dashed var(--br);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:.4;">+</div>';
+    }).join('');
+  }
+
+  // MBTI + 사주 뱃지
+  var badgeBox = document.getElementById('pv-mbti-saju');
+  if(badgeBox){
+    var mbtiHtml;
+    if(a.mbti && MBTI_INFO[a.mbti]){
+      mbtiHtml = '<div style="padding:8px 12px;background:var(--gl);border:.5px solid var(--gold);border-radius:10px;display:flex;align-items:center;gap:6px;">'
+        + '<i class="ti ti-brain" style="font-size:14px;color:var(--gd);"></i><div><div style="font-size:11px;font-weight:600;color:var(--gd);">' + escapeHtml(a.mbti) + '</div>'
+        + '<div style="font-size:10px;color:var(--t2);">' + escapeHtml(MBTI_INFO[a.mbti].desc) + '</div></div></div>';
+    } else {
+      mbtiHtml = '<div style="padding:8px 12px;background:rgba(0,0,0,.04);border:.5px dashed var(--br);border-radius:10px;display:flex;align-items:center;gap:6px;opacity:.5;">'
+        + '<i class="ti ti-brain" style="font-size:14px;color:var(--t3);"></i><div><div style="font-size:11px;font-weight:500;color:var(--t3);">MBTI 미등록</div><div style="font-size:10px;color:var(--t3);">등록 시 소비자에게 궁합 표시</div></div></div>';
+    }
+
+    var sajuHtml;
+    if(a.birth_date){
+      var sr = calcSaju(String(a.birth_date).split('-')[0]);
+      var sajuLabel = sr ? (sr.animal + '띠 · ' + sr.element + '(' + sr.elementInfo.hanja + ')') : '등록됨';
+      sajuHtml = '<div style="padding:8px 12px;background:var(--gl);border:.5px solid var(--gold);border-radius:10px;display:flex;align-items:center;gap:6px;">'
+        + '<i class="ti ti-moon-stars" style="font-size:14px;color:var(--gd);"></i><div><div style="font-size:11px;font-weight:600;color:var(--gd);">' + escapeHtml(sajuLabel) + '</div>'
+        + '<div style="font-size:10px;color:var(--t2);">' + (sr ? escapeHtml(sr.elementInfo.match) : '') + '</div></div></div>';
+    } else {
+      sajuHtml = '<div style="padding:8px 12px;background:rgba(0,0,0,.04);border:.5px dashed var(--br);border-radius:10px;display:flex;align-items:center;gap:6px;opacity:.5;">'
+        + '<i class="ti ti-moon-stars" style="font-size:14px;color:var(--t3);"></i><div><div style="font-size:11px;font-weight:500;color:var(--t3);">사주 미등록</div><div style="font-size:10px;color:var(--t3);">등록 시 궁합 분석 가능</div></div></div>';
+    }
+    badgeBox.innerHTML = mbtiHtml + sajuHtml;
+  }
+
   // 완성도
+  var hasAnyPhoto = Object.keys(PHOTO_SLOTS).some(function(slot){ return !!a[PHOTO_SLOTS[slot].col]; });
   var checks = [
     {ok: !!office && !!address, label: '기본정보(사무소·주소) 등록'},
     {ok: !!phone, label: '전화번호 등록'},
     {ok: !!career, label: '경력 등록'},
     {ok: specs.length > 0, label: '전문 분야 등록'},
-    {ok: !!intro, label: '한 줄 소개 등록'}
+    {ok: !!intro, label: '한 줄 소개 등록'},
+    {ok: !!a.mbti, label: 'MBTI 등록'},
+    {ok: !!a.birth_date, label: '사주 등록'},
+    {ok: hasAnyPhoto, label: '사진 등록'}
   ];
   var done = checks.filter(function(c){return c.ok;}).length;
   var pct = Math.round(done / checks.length * 100);
