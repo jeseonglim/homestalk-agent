@@ -375,6 +375,7 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
     <div class="ptab" onclick="showProfTab('사주')">사주</div>
     <div class="ptab" onclick="showProfTab('사진')">사진</div>
     <div class="ptab" onclick="showProfTab('SNS')">SNS</div>
+    <div class="ptab" onclick="showProfTab('콘텐츠')">콘텐츠</div>
     <div class="ptab" onclick="showProfTab('미리보기')">👁️ 미리보기</div>
   </div>
 
@@ -465,15 +466,59 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
   <!-- SNS 탭 -->
   <div id="prof-SNS" class="section pb" style="display:none;">
     <div class="label"><i class="ti ti-brand-youtube" style="color:#ff0000;font-size:14px;"></i> 유튜브</div>
-    <input class="input" placeholder="https://youtube.com/@..." style="margin-bottom:14px;">
+    <input id="sns-youtube" class="input" type="url" placeholder="https://youtube.com/@..." style="margin-bottom:14px;">
     <div class="label"><i class="ti ti-brand-instagram" style="color:#E1306C;font-size:14px;"></i> 인스타그램</div>
-    <input class="input" placeholder="https://instagram.com/..." style="margin-bottom:14px;">
+    <input id="sns-instagram" class="input" type="url" placeholder="https://instagram.com/..." style="margin-bottom:14px;">
     <div class="label"><i class="ti ti-notebook" style="color:#03C75A;font-size:14px;"></i> 네이버 블로그</div>
-    <input class="input" placeholder="https://blog.naver.com/..." style="margin-bottom:14px;">
+    <input id="sns-blog" class="input" type="url" placeholder="https://blog.naver.com/..." style="margin-bottom:14px;">
     <div class="label"><i class="ti ti-brand-kakao" style="color:#F7E600;font-size:14px;"></i> 카카오 채널</div>
-    <input class="input" placeholder="카카오 채널 링크" style="margin-bottom:16px;">
-    <button class="btn-gold" onclick="showToast('SNS 저장 기능은 아직 준비 중이에요.', 1)">SNS 저장하기</button>
-    <div class="ro-note" style="margin-top:10px;">SNS 링크는 아직 저장되지 않아요 (준비 중).</div>
+    <input id="sns-kakao" class="input" type="url" placeholder="https://pf.kakao.com/..." style="margin-bottom:16px;">
+    <div id="sns-msg" class="msg" style="display:none;"></div>
+    <button class="btn-gold" onclick="saveAgentSns()">SNS 저장하기</button>
+    <div class="ro-note" style="margin-top:10px;">등록한 채널은 소비자앱의 우리동네 부동산 소식·프로필에 표시돼요. 빈칸으로 저장하면 그 채널은 지워져요.</div>
+  </div>
+
+  <!-- 콘텐츠 탭 (우리동네 부동산 소식) -->
+  <div id="prof-콘텐츠" class="section pb" style="display:none;">
+    <div style="padding:12px;background:var(--gl);border-radius:12px;margin-bottom:16px;font-size:13px;color:var(--gd);line-height:1.6;">직접 만든 블로그·유튜브·인스타 콘텐츠를 등록하면 소비자앱 "우리동네 부동산 소식"과 내 프로필에 노출돼요.</div>
+    <button class="btn-gold" onclick="openContentForm()">+ 콘텐츠 추가</button>
+
+    <div id="content-form" style="display:none;margin-top:14px;padding:14px;background:var(--sf);border:1px solid var(--br);border-radius:14px;">
+      <input type="hidden" id="content-edit-id">
+      <div class="label">채널</div>
+      <div id="content-channel-chips" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;">
+        <div class="chip on" data-channel="youtube" onclick="setContentChannel('youtube',this)">유튜브</div>
+        <div class="chip" data-channel="blog" onclick="setContentChannel('blog',this)">블로그</div>
+        <div class="chip" data-channel="instagram" onclick="setContentChannel('instagram',this)">인스타</div>
+        <div class="chip" data-channel="kakao" onclick="setContentChannel('kakao',this)">카카오</div>
+      </div>
+      <div class="label">제목 *</div>
+      <input id="content-title" class="input" placeholder="예: 검단신도시 전세시장 분석" style="margin-bottom:12px;">
+      <div class="label">간단 설명</div>
+      <textarea id="content-desc" class="input" rows="2" placeholder="2줄 정도 요약" style="margin-bottom:12px;resize:vertical;"></textarea>
+      <div class="label">콘텐츠 URL *</div>
+      <input id="content-url" class="input" type="url" placeholder="https://..." style="margin-bottom:12px;">
+      <div class="label">썸네일 URL (선택)</div>
+      <input id="content-thumb" class="input" type="url" placeholder="https://... (없으면 기본 아이콘)" style="margin-bottom:12px;">
+      <div class="label">카테고리</div>
+      <div id="content-category-chips" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;">
+        <div class="chip on" data-cat="아파트" onclick="setContentCategory('아파트',this)">아파트</div>
+        <div class="chip" data-cat="전세" onclick="setContentCategory('전세',this)">전세</div>
+        <div class="chip" data-cat="월세" onclick="setContentCategory('월세',this)">월세</div>
+        <div class="chip" data-cat="상가" onclick="setContentCategory('상가',this)">상가</div>
+        <div class="chip" data-cat="투자" onclick="setContentCategory('투자',this)">투자</div>
+        <div class="chip" data-cat="기타" onclick="setContentCategory('기타',this)">기타</div>
+      </div>
+      <div class="label">지역</div>
+      <input id="content-region" class="input" placeholder="예: 검단, 원당동" style="margin-bottom:16px;">
+      <div style="display:flex;gap:8px;">
+        <button class="btn-gold" style="flex:2;" onclick="saveContent()">등록</button>
+        <button class="btn-outline" style="flex:1;" onclick="closeContentForm()">취소</button>
+      </div>
+      <div id="content-form-msg" class="msg" style="display:none;margin-top:10px;"></div>
+    </div>
+
+    <div id="content-list" style="margin-top:16px;display:flex;flex-direction:column;gap:10px;"></div>
   </div>
 
   <!-- 미리보기 탭 -->
@@ -1645,6 +1690,7 @@ function fillProfileForm(a){
   renderPhotoTab();
   applyMbtiFromAgent(a);
   applySajuFromAgent(a);
+  applySnsFromAgent(a);
 
   renderPreview();
 }
@@ -1961,6 +2007,189 @@ async function saveSaju(){
   renderPreview();
 }
 
+// ══ SNS(홍보채널) — 우리동네 부동산 소식 1단계 ══
+function applySnsFromAgent(a){
+  var set = function(id, v){ var el = document.getElementById(id); if(el) el.value = (v == null ? '' : v); };
+  set('sns-youtube', a.youtube_url);
+  set('sns-instagram', a.instagram_url);
+  set('sns-blog', a.blog_url);
+  set('sns-kakao', a.kakao_channel_url);
+}
+
+async function saveAgentSns(){
+  if(!currentSession || !currentAgent){ showToast('로그인 정보를 확인할 수 없어요.', 1); return; }
+
+  var fields = [
+    { id: 'sns-youtube', col: 'youtube_url', label: '유튜브' },
+    { id: 'sns-instagram', col: 'instagram_url', label: '인스타그램' },
+    { id: 'sns-blog', col: 'blog_url', label: '네이버 블로그' },
+    { id: 'sns-kakao', col: 'kakao_channel_url', label: '카카오 채널' }
+  ];
+
+  var payload = {};
+  for(var i = 0; i < fields.length; i++){
+    var f = fields[i];
+    var val = document.getElementById(f.id).value.trim();
+    if(val && val.indexOf('http://') !== 0 && val.indexOf('https://') !== 0){
+      showToast(f.label + ' 주소는 http:// 또는 https://로 시작해야 해요.', 1);
+      return;
+    }
+    payload[f.col] = val || null; // 빈칸으로 저장하면 그 채널은 지워짐(요청사항)
+  }
+
+  var upd = await sb.from('agents').update(payload).eq('user_id', currentSession.user.id).select().maybeSingle();
+  if(upd.error){ showToast('SNS 저장 실패: ' + upd.error.message, 1); return; }
+  currentAgent = upd.data;
+  showToast('SNS 채널이 저장됐어요!', 0);
+}
+
+// ══ 콘텐츠(우리동네 부동산 소식) — 직접 만든 블로그·유튜브·인스타 글 등록 ══
+var selectedContentChannel = 'youtube';
+var selectedContentCategory = '아파트';
+var CONTENT_CHANNEL_LABEL = { youtube: '유튜브', blog: '네이버 블로그', instagram: '인스타그램', kakao: '카카오 채널' };
+var CONTENT_CHANNEL_ICON = { youtube: 'ti-brand-youtube', blog: 'ti-notebook', instagram: 'ti-brand-instagram', kakao: 'ti-brand-kakao' };
+var CONTENT_CHANNEL_COLOR = { youtube: '#FF0000', blog: '#03C75A', instagram: '#E4405F', kakao: '#FEE500' };
+
+function setContentChannel(v, el){
+  selectedContentChannel = v;
+  el.parentElement.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('on'); });
+  el.classList.add('on');
+}
+function setContentCategory(v, el){
+  selectedContentCategory = v;
+  el.parentElement.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('on'); });
+  el.classList.add('on');
+}
+// showMsg()는 이 파일에서 #auth-msg 전용으로 고정돼 있어(2개 인자) 재사용 불가 — 콘텐츠 폼 전용 헬퍼를 따로 둠
+function showContentFormMsg(text, isError){
+  var el = document.getElementById('content-form-msg');
+  el.style.display = 'block';
+  el.textContent = text;
+  el.style.background = isError ? '#FEF2F2' : '#F0FDF4';
+  el.style.color = isError ? '#DC2626' : '#16A34A';
+}
+function hideContentFormMsg(){
+  document.getElementById('content-form-msg').style.display = 'none';
+}
+
+function openContentForm(existing){
+  document.getElementById('content-form').style.display = 'block';
+  document.getElementById('content-edit-id').value = existing ? existing.id : '';
+  document.getElementById('content-title').value = existing ? existing.title : '';
+  document.getElementById('content-desc').value = existing ? (existing.description || '') : '';
+  document.getElementById('content-url').value = existing ? existing.content_url : '';
+  document.getElementById('content-thumb').value = existing ? (existing.thumbnail_url || '') : '';
+  document.getElementById('content-region').value = existing ? (existing.region || '') : (currentAgent && currentAgent.address ? extractDongName(currentAgent.address) : '검단');
+
+  selectedContentChannel = existing ? existing.channel_type : 'youtube';
+  document.querySelectorAll('#content-channel-chips .chip').forEach(function(c){
+    c.classList.toggle('on', c.getAttribute('data-channel') === selectedContentChannel);
+  });
+  selectedContentCategory = existing ? (existing.category || '아파트') : '아파트';
+  document.querySelectorAll('#content-category-chips .chip').forEach(function(c){
+    c.classList.toggle('on', c.getAttribute('data-cat') === selectedContentCategory);
+  });
+
+  hideContentFormMsg();
+  document.getElementById('content-form').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function closeContentForm(){
+  document.getElementById('content-form').style.display = 'none';
+}
+
+// 주소 문자열에서 동 이름만 뽑아냄 — 소비자앱 AI매칭 지역 질문과 같은 방식(괄호 안 첫 동 이름)
+function extractDongName(address){
+  var m = String(address || '').match(/\(([^,)]+동)/);
+  return m ? m[1] : '검단';
+}
+
+async function saveContent(){
+  if(!currentSession || !currentAgent){ showToast('로그인 정보를 확인할 수 없어요.', 1); return; }
+
+  var editId = document.getElementById('content-edit-id').value;
+  var title = document.getElementById('content-title').value.trim();
+  var url = document.getElementById('content-url').value.trim();
+  var desc = document.getElementById('content-desc').value.trim();
+  var thumb = document.getElementById('content-thumb').value.trim();
+  var region = document.getElementById('content-region').value.trim();
+
+  if(!title){ showContentFormMsg('제목을 입력해주세요.', 1); return; }
+  if(!url || (url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0)){
+    showContentFormMsg('콘텐츠 URL은 http:// 또는 https://로 시작해야 해요.', 1); return;
+  }
+  if(thumb && thumb.indexOf('http://') !== 0 && thumb.indexOf('https://') !== 0){
+    showContentFormMsg('썸네일 URL은 http:// 또는 https://로 시작해야 해요.', 1); return;
+  }
+
+  var payload = {
+    agent_id: currentAgent.id,
+    channel_type: selectedContentChannel,
+    title: title,
+    description: desc || null,
+    content_url: url,
+    thumbnail_url: thumb || null,
+    category: selectedContentCategory,
+    region: region || '검단'
+  };
+
+  var result;
+  if(editId){
+    result = await sb.from('agent_contents').update(payload).eq('id', editId);
+  } else {
+    payload.published_at = new Date().toISOString();
+    result = await sb.from('agent_contents').insert(payload);
+  }
+  if(result.error){ showContentFormMsg('저장 실패: ' + result.error.message, 1); return; }
+
+  showToast(editId ? '콘텐츠가 수정됐어요!' : '콘텐츠가 등록됐어요!', 0);
+  closeContentForm();
+  loadMyContents();
+}
+
+async function loadMyContents(){
+  var list = document.getElementById('content-list');
+  if(!currentAgent){ list.innerHTML = ''; return; }
+  list.innerHTML = '<div style="text-align:center;padding:16px;color:var(--t3);font-size:13px;">불러오는 중...</div>';
+
+  var result = await sb.from('agent_contents').select('*').eq('agent_id', currentAgent.id).neq('status', '삭제').order('created_at', { ascending: false });
+  if(result.error){ list.innerHTML = '<div style="text-align:center;padding:16px;color:var(--t3);font-size:13px;">불러오지 못했어요: ' + escapeHtml(result.error.message) + '</div>'; return; }
+
+  var rows = result.data || [];
+  if(rows.length === 0){ list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--t3);font-size:13px;">아직 등록한 콘텐츠가 없어요.</div>'; return; }
+
+  window.__myContents = {};
+  rows.forEach(function(r){ window.__myContents[r.id] = r; });
+
+  list.innerHTML = rows.map(function(r){
+    var isHidden = r.status === '숨김';
+    var icon = CONTENT_CHANNEL_ICON[r.channel_type] || 'ti-link';
+    var color = CONTENT_CHANNEL_COLOR[r.channel_type] || 'var(--gold)';
+    var dateStr = r.published_at ? new Date(r.published_at).toLocaleDateString('ko-KR') : '';
+    return '<div class="card" style="margin:0;padding:12px;' + (isHidden ? 'opacity:.55;' : '') + '">'
+      + '<div style="display:flex;gap:10px;align-items:flex-start;">'
+      + (r.thumbnail_url
+          ? '<img src="' + escapeHtml(r.thumbnail_url) + '" style="width:56px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;" onerror="this.style.display=\'none\'">'
+          : '<div style="width:56px;height:44px;border-radius:8px;background:var(--gl);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ' + icon + '" style="color:' + color + ';font-size:18px;"></i></div>')
+      + '<div style="flex:1;min-width:0;">'
+      + '<div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(r.title) + '</div>'
+      + '<div style="font-size:11px;color:var(--t2);margin-top:2px;">' + CONTENT_CHANNEL_LABEL[r.channel_type] + (r.category ? ' · ' + escapeHtml(r.category) : '') + (dateStr ? ' · ' + dateStr : '') + '</div>'
+      + (isHidden ? '<span class="tag tag-gy" style="margin-top:4px;display:inline-block;">숨김</span>' : '')
+      + '</div></div>'
+      + '<div style="display:flex;gap:6px;margin-top:10px;">'
+      + '<button class="btn-outline" style="flex:1;padding:8px;font-size:12px;" onclick="openContentForm(window.__myContents[\'' + r.id + '\'])">수정</button>'
+      + '<button class="btn-outline" style="flex:1;padding:8px;font-size:12px;" onclick="toggleContentStatus(\'' + r.id + '\',\'' + r.status + '\')">' + (isHidden ? '공개로 전환' : '숨기기') + '</button>'
+      + '</div></div>';
+  }).join('');
+}
+
+async function toggleContentStatus(id, currentStatus){
+  var next = currentStatus === '숨김' ? '공개' : '숨김';
+  var result = await sb.from('agent_contents').update({ status: next }).eq('id', id);
+  if(result.error){ showToast('상태 변경 실패: ' + result.error.message, 1); return; }
+  showToast(next === '숨김' ? '콘텐츠를 숨겼어요.' : '다시 공개했어요.', 0);
+  loadMyContents();
+}
+
 // 2) 프로필 저장 (수정 가능 항목만 업데이트)
 async function saveAgentProfile(){
   if(!currentSession){ showToast('로그인이 필요해요.', 1); return; }
@@ -2108,11 +2337,12 @@ function renderPreview(){
 function showProfTab(tab){
   document.querySelectorAll('.ptab').forEach(function(t){t.classList.remove('on');});
   if(event&&event.currentTarget) event.currentTarget.classList.add('on');
-  ['기본','MBTI','사주','사진','SNS','미리보기'].forEach(function(t){
+  ['기본','MBTI','사주','사진','SNS','콘텐츠','미리보기'].forEach(function(t){
     var el=document.getElementById('prof-'+t);
     if(el) el.style.display=t===tab?'block':'none';
   });
   if(tab==='미리보기') renderPreview();
+  if(tab==='콘텐츠') loadMyContents();
 }
 var deferredPrompt;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferredPrompt=e;if(!window.matchMedia('(display-mode:standalone)').matches)document.getElementById('install-banner').style.display='flex';});
