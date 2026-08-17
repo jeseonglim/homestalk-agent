@@ -992,7 +992,9 @@ function newReqCardHtml(row, tabIdx){
 
   var actions, adUpRow = '';
   if(tabIdx === 0 || tabIdx === 1){
-    actions = phoneBtn + '<div class="act-btn ' + (isQr ? 'pu' : 'gold') + '" onclick="acceptPropertyAgent(\'' + row.id + '\')">접수 확인</div>';
+    actions = phoneBtn
+      + '<div class="act-btn ' + (isQr ? 'pu' : 'gold') + '" onclick="acceptPropertyAgent(\'' + row.id + '\')">접수 확인</div>'
+      + '<div class="act-btn outline" style="border-color:var(--rd);color:var(--rd);" onclick="rejectPropertyAgent(\'' + row.id + '\')">거절</div>';
   } else if(tabIdx === 2){
     actions = phoneBtn
       + (row.status === 'accepted' ? '<div class="act-btn gold" onclick="progressPropertyAgent(\'' + row.id + '\')">진행중으로 전환</div>' : '')
@@ -1173,6 +1175,24 @@ async function acceptPropertyAgent(id){
   var r = await sb.from('property_agents').update({status:'accepted'}).eq('id', id);
   if(r.error){ alert('접수 확인 처리에 실패했어요: ' + r.error.message); return; }
   alert('접수를 확인했어요!');
+  loadInquiries();
+}
+
+// "새 의뢰"/"QR접수" 탭(대기중 건)에서만 노출되는 거절 버튼. 이미 수락·진행중·완료된
+// 건을 잘못 눌러 거절해버리는 사고를 막기 위해 .eq('status','pending')을 조건에 같이
+// 걸고, .select()로 실제 몇 건이 바뀌었는지 받아본다 — 0건이면(예: 다른 기기에서 먼저
+// 수락 처리된 경우) 에러는 아니지만 "이미 처리됨" 안내로 구분해서 보여준다.
+// RLS는 accept/progress/complete와 동일하게 property_agents의 UPDATE 정책(배정된
+// 본인 agent_user_id = auth.uid()만 허용)에 그대로 의존 — 별도 조건을 안 걸어도
+// 남의 의뢰를 거절할 수 없는 건 이미 이 세 함수가 같은 방식으로 안전하게 동작해온 것과
+// 동일한 이유다(추가 SQL 없이 RLS 재사용).
+async function rejectPropertyAgent(id){
+  if(!currentSession) return;
+  if(!confirm('이 의뢰를 거절할까요? 거절하면 되돌릴 수 없어요.')) return;
+  var r = await sb.from('property_agents').update({status:'rejected'}).eq('id', id).eq('status', 'pending').select();
+  if(r.error){ alert('거절 처리에 실패했어요: ' + r.error.message); return; }
+  if(!r.data || r.data.length === 0){ alert('이미 처리된 의뢰라 거절할 수 없어요.'); loadInquiries(); return; }
+  alert('의뢰를 거절했어요.');
   loadInquiries();
 }
 
