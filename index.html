@@ -390,6 +390,9 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
     <input class="input" id="p-address" readonly placeholder="-" style="margin-bottom:12px;">
     <div class="label">전화번호</div>
     <input class="input" id="p-phone" type="tel" oninput="renderPreview()" placeholder="예: 032-123-4567" style="margin-bottom:12px;">
+    <div class="label">휴대폰 번호 (문자 문의용)</div>
+    <input class="input" id="p-mobile" type="tel" placeholder="예: 010-1234-5678" style="margin-bottom:4px;">
+    <div class="ro-note" style="margin-bottom:12px;">소비자가 문자로 문의할 수 있도록 휴대폰 번호를 등록해주세요</div>
     <div class="label">경력 (년)</div>
     <input class="input" id="p-career" type="number" min="0" max="70" oninput="renderPreview()" placeholder="예: 12" style="margin-bottom:12px;">
     <div class="label">한 줄 소개</div>
@@ -1748,6 +1751,7 @@ function fillProfileForm(a){
   set('p-reg', a.reg_number);
   set('p-address', a.address);
   set('p-phone', a.phone);
+  set('p-mobile', a.mobile_phone);
   set('p-career', a.career_years);
   set('p-intro', a.profile_intro);
   selectedSpec = parseSpec(a.speciality);
@@ -2272,6 +2276,7 @@ async function saveAgentProfile(){
   if(!currentAgent){ showToast('연결된 중개사 정보가 없어 저장할 수 없어요.', 1); return; }
 
   var phone = document.getElementById('p-phone').value.trim();
+  var mobile = document.getElementById('p-mobile').value.trim();
   var careerRaw = document.getElementById('p-career').value.trim();
   var intro = document.getElementById('p-intro').value.trim();
 
@@ -2283,6 +2288,7 @@ async function saveAgentProfile(){
 
   var payload = {
     phone: phone || null,
+    mobile_phone: mobile || null,
     career_years: career,
     speciality: selectedSpec.length ? selectedSpec.join(', ') : null,
     profile_intro: intro || null
