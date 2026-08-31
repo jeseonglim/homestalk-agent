@@ -103,7 +103,8 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
 .stat-val{font-size:21px;font-weight:700;letter-spacing:-.04em;}
 .stat-label{font-size:10px;color:var(--t3);margin-top:3px;}
 .tabs{display:flex;border-bottom:1px solid var(--br);background:var(--sf);}
-.tab{flex:1;padding:13px 6px;text-align:center;font-size:13px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;transition:all var(--ease);}
+.tab{flex:1;padding:13px 3px;text-align:center;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;transition:all var(--ease);white-space:nowrap;}
+.tab span{white-space:nowrap;}
 .tab:hover{color:var(--gd);}
 .tab.on{color:var(--gd);border-bottom-color:var(--gold);font-weight:600;}
 .req-card{margin:10px 18px;border-radius:14px;overflow:hidden;border:1px solid var(--br);background:var(--sf);box-shadow:var(--sh);transition:box-shadow var(--ease);}
@@ -242,18 +243,23 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
 
   <!-- 통계 (property_agents/ads 실데이터 — loadHomeStats()가 채움) -->
   <div class="stat-grid">
-    <div class="stat"><div class="stat-val" id="stat-month" style="color:var(--gd);">-</div><div class="stat-label">이번달 의뢰</div></div>
+    <div class="stat"><div class="stat-val" id="stat-month" style="color:var(--gd);">-</div><div class="stat-label">전체 의뢰</div></div>
     <div class="stat"><div class="stat-val" id="stat-pending" style="color:var(--or);">-</div><div class="stat-label">대기 중</div></div>
     <div class="stat"><div class="stat-val" id="stat-adprogress" style="color:var(--gn);">-</div><div class="stat-label">광고 진행</div></div>
     <div class="stat"><div class="stat-val" id="stat-qr" style="color:var(--pu);">-</div><div class="stat-label">QR 접수</div></div>
   </div>
 
-  <!-- 탭 -->
+  <!-- 탭 — 0=전체(신규, 기간/상태 제한 없이 전부) 1=새 의뢰 2=QR접수 3=진행중 4=완료.
+       기존 새의뢰/QR접수/진행중/완료 4탭은 그대로 유지하고(인덱스만 1칸씩 밀림) "전체"만 추가함 —
+       QR접수를 "새 의뢰"에 합치지 않은 이유: QR은 이 앱의 핵심 기능(전용 화면·전용 통계까지
+       있음)이라 별도 탭으로 이미 잘 구분되고 있었고, 합치면 오히려 기존 구분을 없애는 것이라
+       "기존 기능을 깨뜨리지 마라" 원칙에 맞춰 그대로 뒀다. -->
   <div class="tabs">
-    <div class="tab on" id="req-tab-0" onclick="switchReqTab(0)">새 의뢰 <span id="req-badge-0" style="background:var(--gold);color:#fff;font-size:10px;padding:1px 6px;border-radius:8px;margin-left:3px;">0</span></div>
-    <div class="tab" id="req-tab-1" onclick="switchReqTab(1)">QR접수 <span id="req-badge-1" style="background:var(--pu);color:#fff;font-size:10px;padding:1px 6px;border-radius:8px;margin-left:3px;">0</span></div>
-    <div class="tab" id="req-tab-2" onclick="switchReqTab(2)">진행중</div>
-    <div class="tab" id="req-tab-3" onclick="switchReqTab(3)">완료</div>
+    <div class="tab on" id="req-tab-0" onclick="switchReqTab(0)">전체 <span id="req-badge-0" style="background:var(--t2);color:#fff;font-size:9.5px;padding:1px 4px;border-radius:8px;margin-left:2px;">0</span></div>
+    <div class="tab" id="req-tab-1" onclick="switchReqTab(1)">새 의뢰 <span id="req-badge-1" style="background:var(--gold);color:#fff;font-size:9.5px;padding:1px 4px;border-radius:8px;margin-left:2px;">0</span></div>
+    <div class="tab" id="req-tab-2" onclick="switchReqTab(2)">QR접수 <span id="req-badge-2" style="background:var(--pu);color:#fff;font-size:9.5px;padding:1px 4px;border-radius:8px;margin-left:2px;">0</span></div>
+    <div class="tab" id="req-tab-3" onclick="switchReqTab(3)">진행중 <span id="req-badge-3" style="background:var(--gn);color:#fff;font-size:9.5px;padding:1px 4px;border-radius:8px;margin-left:2px;">0</span></div>
+    <div class="tab" id="req-tab-4" onclick="switchReqTab(4)">완료 <span id="req-badge-4" style="background:#3B82F6;color:#fff;font-size:9.5px;padding:1px 4px;border-radius:8px;margin-left:2px;">0</span></div>
   </div>
 
   <!-- 의뢰 목록 (DB 실시간 연동) -->
@@ -775,7 +781,8 @@ if(isCallback){
 }
 
 // ══ 의뢰함 (DB 실시간 연동) ══
-// 탭: 0=새 의뢰(app,대기중,미배정) 1=QR접수(qr,대기중,미배정) 2=진행중(내가 수락) 3=완료(내가 완료)
+// 탭: 0=전체(제한 없음, 신규) 1=새 의뢰(app,대기중,미배정) 2=QR접수(qr,대기중,미배정)
+//     3=진행중(내가 수락) 4=완료(내가 완료)
 var currentReqTab = 0;
 
 function escapeHtml(s){
@@ -795,7 +802,7 @@ function timeAgo(iso){
 
 function switchReqTab(idx){
   currentReqTab = idx;
-  [0,1,2,3].forEach(function(i){
+  [0,1,2,3,4].forEach(function(i){
     var t = document.getElementById('req-tab-' + i);
     if(t) t.classList.toggle('on', i === idx);
   });
@@ -818,22 +825,25 @@ async function loadInquiries(){
       + '<div style="font-size:13px;color:var(--t3);">표시할 의뢰가 없어요</div>';
   } else {
     empty.style.display = 'none';
-    list.innerHTML = rows.map(function(row){ return newReqCardHtml(row, currentReqTab); }).join('');
+    list.innerHTML = rows.map(function(row){ return newReqCardHtml(row); }).join('');
   }
   updateReqBadges();
 }
 
 // 뱃지도 목록과 같은 기준(property_agents.status)으로 세요
 async function updateReqBadges(){
-  var b0 = document.getElementById('req-badge-0'), b1 = document.getElementById('req-badge-1');
   var counts = await countNewReqsByTab();
-  if(b0) b0.textContent = counts[0];
-  if(b1) b1.textContent = counts[1];
+  [0,1,2,3,4].forEach(function(i){
+    var b = document.getElementById('req-badge-' + i);
+    if(b) b.textContent = counts[i];
+  });
 }
 
 // 홈 화면 상단 통계 4칸 — 예전엔 "8/3/5/2"로 하드코딩돼 있던 자리를 실데이터로 채움.
-// 이번달 의뢰: 이번 달에 나에게 배정된 건수 / 대기 중: status='pending' / 광고 진행: 광고를
-// 1개 이상 등록한 배정 건수(ads 조인) / QR 접수: source='qr' 전체 건수.
+// 전체 의뢰: 기간 제한 없이 나에게 배정된 전체 건수(예전엔 "이번달 의뢰"로 이번 달만
+// 셌는데, "지금까지 접수된 전체 물건이 한눈에 안 보인다"는 요청에 맞춰 전체로 변경) /
+// 대기 중: status='pending' / 광고 진행: 광고를 1개 이상 등록한 배정 건수(ads 조인) /
+// QR 접수: source='qr' 전체 건수.
 async function loadHomeStats(){
   var elMonth = document.getElementById('stat-month');
   var elPending = document.getElementById('stat-pending');
@@ -843,7 +853,6 @@ async function loadHomeStats(){
   if(!currentSession || !elMonth) return;
 
   try {
-    var monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
     var mineFilter = myPropertyAgentOrFilter();
 
     var allResult = await sb.from('property_agents').select('id, status, source, created_at').or(mineFilter);
@@ -853,7 +862,7 @@ async function loadHomeStats(){
     }
     var rows = allResult.data || [];
 
-    var monthCount = rows.filter(function(r){ return r.created_at >= monthStart; }).length;
+    var monthCount = rows.length; // "전체 의뢰" — 변수명은 유지하되 이제 전체 건수를 담음
     var pendingCount = rows.filter(function(r){ return r.status === 'pending'; }).length;
     var qrCount = rows.filter(function(r){ return r.source === 'qr'; }).length;
 
@@ -908,10 +917,12 @@ var CHANNEL_META = {
 };
 
 // 탭 인덱스 → property_agents.status 조건 (QR/새 의뢰는 둘 다 'pending'이고 source로 구분)
+// 0=전체는 null을 반환 — 호출부(loadNewInquiries)가 이걸 보고 .in('status', ...) 자체를 안 건다.
 function newTabStatusFilter(tabIdx){
-  if(tabIdx === 2) return ['accepted', 'in_progress']; // 진행중
-  if(tabIdx === 3) return ['completed'];                // 완료
-  return ['pending'];                                   // 0=새 의뢰, 1=QR접수
+  if(tabIdx === 0) return null;                         // 전체: 상태 제한 없음(거절함 포함 전부)
+  if(tabIdx === 3) return ['accepted', 'in_progress'];  // 진행중
+  if(tabIdx === 4) return ['completed'];                 // 완료
+  return ['pending'];                                    // 1=새 의뢰, 2=QR접수
 }
 
 // 나를 식별하는 두 값(agent_user_id=uid, agent_ref_id=agents.id) 중 하나라도 매칭되면 내 건.
@@ -932,11 +943,13 @@ async function loadNewInquiries(){
     var q = sb.from('property_agents')
       .select('*, properties(*)')
       .or(myPropertyAgentOrFilter())
-      .in('status', newTabStatusFilter(currentReqTab))
       .order('created_at', {ascending:false});
 
-    if(currentReqTab === 0) q = q.neq('source', 'qr'); // 새 의뢰탭은 QR 제외(QR은 1번 탭에서 따로)
-    if(currentReqTab === 1) q = q.eq('source', 'qr');
+    var statusFilter = newTabStatusFilter(currentReqTab);
+    if(statusFilter) q = q.in('status', statusFilter); // 전체(0)는 null이라 상태 제한 자체를 안 검
+
+    if(currentReqTab === 1) q = q.neq('source', 'qr'); // 새 의뢰탭은 QR 제외(QR은 2번 탭에서 따로)
+    if(currentReqTab === 2) q = q.eq('source', 'qr');
 
     var result = await q;
     if(result.error){
@@ -967,17 +980,21 @@ async function loadNewInquiries(){
   return lastNewReqs;
 }
 
-// updateReqBadges()에서 합산할 새 구조 건수 (0=새 의뢰, 1=QR접수)
+// updateReqBadges()에서 합산할 5개 탭 건수 (0=전체 1=새 의뢰 2=QR접수 3=진행중 4=완료).
+// 탭마다 따로 조회하지 않고 status/source만 한 번에 받아서 클라이언트에서 다 나눈다.
 async function countNewReqsByTab(){
-  var counts = [0, 0];
+  var counts = [0, 0, 0, 0, 0];
   if(!currentSession) return counts;
   try {
-    var result = await sb.from('property_agents').select('source').or(myPropertyAgentOrFilter()).eq('status', 'pending');
+    var result = await sb.from('property_agents').select('status, source').or(myPropertyAgentOrFilter());
     var rows = result.data || [];
-    counts[0] = rows.filter(function(r){ return r.source !== 'qr'; }).length;
-    counts[1] = rows.filter(function(r){ return r.source === 'qr'; }).length;
+    counts[0] = rows.length;
+    counts[1] = rows.filter(function(r){ return r.status === 'pending' && r.source !== 'qr'; }).length;
+    counts[2] = rows.filter(function(r){ return r.status === 'pending' && r.source === 'qr'; }).length;
+    counts[3] = rows.filter(function(r){ return r.status === 'accepted' || r.status === 'in_progress'; }).length;
+    counts[4] = rows.filter(function(r){ return r.status === 'completed'; }).length;
   } catch(e){
-    console.warn('[Phase4] 새 구조 뱃지 집계 실패 (기존 뱃지 숫자는 유지됨):', e.message);
+    console.warn('[Phase4] 탭 뱃지 집계 실패 (기존 뱃지 숫자는 유지됨):', e.message);
   }
   return counts;
 }
@@ -1008,7 +1025,22 @@ function propStatusBadgeHtml(status){
   return '<span class="tag" style="background:' + m.bg + ';color:' + m.color + ';font-weight:700;">' + m.label + '</span>';
 }
 
-function newReqCardHtml(row, tabIdx){
+// property_agents.status(이 중개사 배정 건의 처리 상태) 뱃지 — properties.status(물건 자체의
+// 시장 상태: 모집중/보류중/거래완료)와는 다른 값이다. "전체" 탭에서 여러 상태가 섞여 보이므로
+// 카드마다 이 배정 건이 어느 단계인지 한눈에 보이도록 추가함.
+var PA_STATUS_META = {
+  pending:     { label: '새 의뢰',  bg: '#EF4444', color: '#fff' },
+  accepted:    { label: '진행중',   bg: '#10B981', color: '#fff' },
+  in_progress: { label: '진행중',   bg: '#10B981', color: '#fff' },
+  completed:   { label: '거래완료', bg: '#3B82F6', color: '#fff' },
+  rejected:    { label: '거절함',   bg: '#9CA3AF', color: '#fff' }
+};
+function paStatusBadgeHtml(status){
+  var m = PA_STATUS_META[status] || PA_STATUS_META.pending;
+  return '<span class="tag" style="background:' + m.bg + ';color:' + m.color + ';font-weight:700;">' + m.label + '</span>';
+}
+
+function newReqCardHtml(row){
   var p = row.properties;
   var isQr = row.source === 'qr';
   var cardClass = isQr ? 'pu' : 'gold';
@@ -1031,22 +1063,33 @@ function newReqCardHtml(row, tabIdx){
   var phoneBtn = p.phone
     ? '<a class="act-btn outline" href="tel:' + escapeHtml(p.phone) + '" style="text-decoration:none;"><i class="ti ti-phone" style="font-size:13px;"></i> 전화</a>'
     : '<div class="act-btn outline" style="opacity:.4;"><i class="ti ti-phone" style="font-size:13px;"></i> 전화</div>';
+  // 카드에 연락처를 텍스트로도 바로 보이게(버튼 안 눌러도 확인 가능) — properties에 소비자
+  // "이름" 컬럼은 없어서(스키마 확인됨) 전화번호만 표시한다. 없는 값을 지어내지 않는다.
+  var phoneText = p.phone
+    ? '<div style="font-size:12px;color:var(--t2);margin-bottom:8px;"><i class="ti ti-phone" style="font-size:12px;color:var(--t3);"></i> ' + escapeHtml(p.phone) + '</div>'
+    : '';
 
+  // ⚠️ 예전엔 tabIdx(몇 번 탭에서 보고 있는지)로 버튼을 나눴는데, "전체" 탭이 생기면서
+  // 한 목록 안에 여러 상태가 섞이므로 row.status(실제 배정 상태) 기준으로 바꿨다 — 기존
+  // 탭(새의뢰/QR접수/진행중/완료)은 애초에 각자 하나의 status만 불러오므로 결과는 그대로다.
   var actions, adUpRow = '';
-  if(tabIdx === 0 || tabIdx === 1){
+  var st = row.status;
+  if(st === 'pending'){
     actions = phoneBtn
       + '<div class="act-btn ' + (isQr ? 'pu' : 'gold') + '" onclick="acceptPropertyAgent(\'' + row.id + '\')">접수 확인</div>'
       + '<div class="act-btn outline" style="border-color:var(--rd);color:var(--rd);" onclick="rejectPropertyAgent(\'' + row.id + '\')">거절</div>';
-  } else if(tabIdx === 2){
+  } else if(st === 'accepted' || st === 'in_progress'){
     actions = phoneBtn
-      + (row.status === 'accepted' ? '<div class="act-btn gold" onclick="progressPropertyAgent(\'' + row.id + '\')">진행중으로 전환</div>' : '')
+      + (st === 'accepted' ? '<div class="act-btn gold" onclick="progressPropertyAgent(\'' + row.id + '\')">진행중으로 전환</div>' : '')
       + '<div class="act-btn outline" onclick="completePropertyAgent(\'' + row.id + '\')">거래 완료 처리</div>';
     // 버튼 4개가 한 줄에 끼면 좁아지므로 광고등록은 아래 줄에 별도로 둠. 소비자가 이미
     // 거래완료로 표시한 물건은 광고 등록이 의미 없으므로 버튼 대신 안내문구로 대체.
     adUpRow = isPropDone
       ? '<div style="margin-top:7px;font-size:11px;color:var(--t3);text-align:center;">광고 등록이 필요 없어요(거래완료).</div>'
       : '<div class="act-btns" style="margin-top:7px;"><div class="act-btn outline" onclick="openAdUpload(\'' + row.id + '\')"><i class="ti ti-speakerphone" style="font-size:13px;"></i> 광고등록</div></div>';
-  } else {
+  } else if(st === 'rejected'){
+    actions = phoneBtn; // 이미 거절한 건이라 별다른 처리 버튼 없음(전화만 유지)
+  } else { // completed
     actions = phoneBtn + (isPropDone ? '' : '<div class="act-btn outline" onclick="openAdUpload(\'' + row.id + '\')">광고등록</div>');
   }
 
@@ -1056,8 +1099,13 @@ function newReqCardHtml(row, tabIdx){
     : '';
   var changesBlock = '<div id="pa-changes-' + row.id + '" style="display:none;margin-top:8px;"></div>';
 
-  // 채널 등록 미니 아이콘 — 등록된 채널만 표시(없으면 이 줄 자체가 비어있음)
-  var channelStrip = '<div id="pa-channels-' + row.id + '" style="margin-bottom:8px;">' + channelIconStripHtml(row.id) + '</div>';
+  // 채널 등록 미니 아이콘 + "N/5채널" 카운트 — 등록된 채널이 하나도 없으면 카운트도 안 보여줌
+  // (0/5채널이라고 매번 뜨면 오히려 시끄러움 — 기존처럼 조용히 비워둠)
+  var registeredChannelCount = AD_CHANNELS.filter(function(c){ return !!(adsByPropertyAgentId[row.id] || {})[c.id]; }).length;
+  var channelCountText = registeredChannelCount > 0
+    ? '<span style="font-size:11px;color:var(--t3);margin-left:4px;">' + registeredChannelCount + '/' + AD_CHANNELS.length + '채널</span>'
+    : '';
+  var channelStrip = '<div id="pa-channels-' + row.id + '" style="margin-bottom:8px;">' + channelIconStripHtml(row.id) + channelCountText + '</div>';
 
   // 상세보기 펼침(요청사항/면적/접수일/채널 체크리스트) — 소비자 연락처는 이미 위 전화 버튼으로
   // 바로 접근 가능하므로 여기 또 넣지 않음(중복 방지)
@@ -1065,9 +1113,10 @@ function newReqCardHtml(row, tabIdx){
   var detailBlock = '<div id="pa-detail-' + row.id + '" style="display:none;"></div>';
 
   return '<div class="req-card ' + cardClass + '">'
-    + '<div class="req-hdr"><div style="display:flex;align-items:center;gap:6px;">' + sourceBadge + changeBadge + '</div><span style="font-size:11px;color:var(--t3);">' + timeAgo(row.created_at) + '</span></div>'
+    + '<div class="req-hdr"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' + paStatusBadgeHtml(row.status) + sourceBadge + changeBadge + '</div><span style="font-size:11px;color:var(--t3);">' + timeAgo(row.created_at) + '</span></div>'
     + '<div class="req-body">'
     + '<div style="font-size:15px;font-weight:700;margin-bottom:6px;">' + title + '</div>'
+    + phoneText
     + '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">' + tags + '</div>'
     + statusNote
     + channelStrip
