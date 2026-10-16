@@ -269,6 +269,17 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
     <div style="font-size:13px;color:var(--t3);">표시할 의뢰가 없어요</div>
   </div>
 
+  <!-- 집톡의 다른 서비스(토크캘린더) 소개 — 중개사에게는 업무 도구로 소개. 의뢰 목록 아래의 카드로,
+       닫으면(X) localStorage에 기억해서 다시 안 보임. -->
+  <div id="talkcal-agent-card" style="position:relative;margin:18px 18px 0;padding:16px 16px 14px;background:var(--sf);border:1.5px solid var(--gold);border-radius:16px;box-shadow:var(--sh);">
+    <span onclick="closeTalkcalBanner('talkcal-agent-card')" style="position:absolute;top:8px;right:12px;font-size:16px;line-height:1;color:var(--t3);cursor:pointer;padding:4px;" aria-label="닫기">✕</span>
+    <div style="font-size:11px;font-weight:700;color:var(--gd);letter-spacing:.02em;margin-bottom:6px;">📅 집톡 · 토크캘린더</div>
+    <div style="font-size:15px;font-weight:700;color:var(--tx);margin-bottom:6px;">토크캘린더로 일정 관리하세요</div>
+    <div style="font-size:12.5px;color:var(--t2);line-height:1.7;margin-bottom:12px;">계약일·잔금일·계약만료 알림<br>고객에게 명절인사·서류안내까지<br>공인중개사 업무를 더 편리하게</div>
+    <a href="https://talk-calendar.vercel.app" target="_blank" rel="noopener noreferrer" style="display:block;text-align:center;padding:11px;background:var(--gold);color:#fff;border-radius:12px;font-size:13px;font-weight:600;text-decoration:none;">토크캘린더 시작하기 →</a>
+  </div>
+  <script>(function(){try{if(localStorage.getItem('hz_talkcal_closed_talkcal-agent-card')==='1'){var e=document.getElementById('talkcal-agent-card');if(e)e.style.display='none';}}catch(err){}})();</script>
+
   <div style="height:104px;"></div>
   <div class="nav">
     <div class="ni on" onclick="go('s-home')"><i class="ti ti-bell"></i><span>의뢰함</span></div>
@@ -635,6 +646,10 @@ body{font-family:'Noto Sans KR',-apple-system,'Pretendard',sans-serif;background
     <div class="ni" onclick="go('s-adup')"><i class="ti ti-speakerphone"></i><span>광고등록</span></div>
     <div class="ni on" onclick="go('s-profile')"><i class="ti ti-user"></i><span>프로필</span></div>
   </div>
+  <div style="padding:4px 18px 8px;">
+    <div style="font-size:12px;font-weight:600;color:var(--t3);margin:0 2px 8px;">집톡 서비스</div>
+    <a href="https://talk-calendar.vercel.app" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:inherit;"><div class="card" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:14px 16px;"><span style="font-size:13px;">📅 토크캘린더 — 일정 관리</span><i class="ti ti-external-link" style="font-size:15px;color:var(--t3);"></i></div></a>
+  </div>
   <div style="padding:4px 18px 14px;">
     <a href="https://homestalk.vercel.app/terms.html" style="text-decoration:none;color:inherit;"><div class="card" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer;padding:14px 16px;"><span style="font-size:13px;">이용약관</span><i class="ti ti-chevron-right" style="font-size:15px;color:var(--t3);"></i></div></a>
     <a href="https://homestalk.vercel.app/privacy.html" style="text-decoration:none;color:inherit;"><div class="card" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:14px 16px;"><span style="font-size:13px;">개인정보처리방침</span><i class="ti ti-chevron-right" style="font-size:15px;color:var(--t3);"></i></div></a>
@@ -751,6 +766,13 @@ async function doSignup(){
   // 않으므로, 대개 "가입 신청 필요" 게이트로 안내됨)
 }
 
+// 토크캘린더 소개 카드 닫기 — 한 번 닫으면 localStorage에 기억해서 다시 안 보인다
+// (저장이 막힌 환경에선 이번 방문 동안만 숨김).
+function closeTalkcalBanner(id){
+  var el = document.getElementById(id);
+  if(el) el.style.display = 'none';
+  try { localStorage.setItem('hz_talkcal_closed_' + id, '1'); } catch(e) {}
+}
 function doLogout(){sb.auth.signOut().then(function(){sessionStorage.clear();window.location.href='/';});}
 
 // ★ 핵심: onAuthStateChange 하나로 모든 로그인 처리 ★
